@@ -28,9 +28,9 @@ test_*.py
 .gitattributes
 
 # Documentation
-README.md
 API_DOCUMENTATION.md
 *.md
+!README.md
 
 # Sample data
 sample_lesson_plans/
