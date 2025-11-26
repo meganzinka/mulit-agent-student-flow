@@ -1,19 +1,22 @@
 # Rehearsed Multi-Student Backend
 
-A parallel student agent system for teacher training using Google's Gemini AI.
+AI-powered classroom simulation system for teacher training with real-time feedback.
 
-## Overview
+## Features
 
-This backend simulates 3 distinct 8th-grade math students with different learning styles:
-- **Alex** (Algorithmic Thinker): Step-by-step, formula-focused
-- **Maya** (Visual Thinker): Diagram-focused, pattern recognition
-- **Jordan** (Struggling Learner): Low confidence, difficulty articulating
+✅ **Parallel Student Agents**: 3 AI students (Alex, Maya, Jordan) with distinct learning styles  
+✅ **K-12 Adaptive**: Students adapt to any grade level and topic via lesson context  
+✅ **Real-Time Coaching**: SSE-based feedback on teacher questioning moves  
+✅ **Audio Responses**: Gemini TTS generates student voice responses  
+✅ **Lesson Plan Analysis**: PDF/text → structured context extraction  
+✅ **Multi-Turn Conversations**: Maintains conversation history  
+✅ **Cloud-Ready**: No disk I/O, stateless, container-ready
 
-When a teacher asks a question, all three student agents process it simultaneously and determine:
-1. Would they raise their hand?
-2. How confident are they?
-3. What's their thinking process?
-4. What would they say?
+## Student Profiles
+
+- **Alex** (Algorithmic): Step-by-step, procedural thinking
+- **Maya** (Visual): Visual/spatial reasoning, pattern recognition  
+- **Jordan** (Struggling): Needs support, uncertain participation
 
 ## Setup
 
@@ -64,74 +67,44 @@ Once running, visit:
 
 ## API Endpoints
 
-### `GET /`
-Health check endpoint.
+### Health & Discovery
+- `GET /` - Health check
+- `GET /students` - List student profiles
 
-**Response:**
-```json
+### Lesson Setup (NEW!)
+```bash
+POST /lesson/setup
 {
-  "status": "ok",
-  "message": "Rehearsed Multi-Student API is running",
-  "students_loaded": 3
+  "lesson_plan_text": "3rd Grade Math - Fractions...",
+  "lesson_plan_pdf_base64": "..."  # optional, PDF via base64
+}
+```
+**Returns**: Structured lesson context (grade, topic, objectives, key concepts)
+
+### Ask Students (Text)
+```bash
+POST /ask
+POST /ask?stream_feedback=true  # with real-time coaching feedback (SSE)
+
+{
+  "prompt": "What is a fraction?",
+  "lesson_context": {...},        # from /lesson/setup
+  "conversation_history": [...]   # optional
 }
 ```
 
-### `GET /students`
-List all available student profiles.
+### Ask Students (With Audio)
+```bash
+POST /ask/with-audio
+POST /ask/with-audio?stream_feedback=true
 
-**Response:**
-```json
 {
-  "students": [
-    {
-      "id": "algorithmic_thinker",
-      "name": "Alex",
-      "learning_style": "algorithmic",
-      "description": "Step-by-step, formula-focused, procedural thinker"
-    },
-    ...
-  ]
+  "prompt": "...",
+  "lesson_context": {...},
+  "conversation_history": [...]
 }
 ```
-
-### `POST /ask`
-Send a prompt to all students and get their responses.
-
-**Request Body:**
-```json
-{
-  "prompt": "We have the line y = 2x + 1. What would a parallel line be?",
-  "lesson_context": "Students are learning about parallel lines and slopes in linear equations.",
-  "conversation_history": [
-    {
-      "speaker": "teacher",
-      "message": "What is the slope of y = 2x + 1?"
-    },
-    {
-      "speaker": "Alex",
-      "message": "The slope is 2"
-    }
-  ]
-}
-```
-
-**Response:**
-```json
-{
-  "students": [
-    {
-      "student_id": "algorithmic_thinker",
-      "student_name": "Alex",
-      "would_raise_hand": true,
-      "confidence_score": 0.8,
-      "thinking_process": "I know parallel lines have the same slope...",
-      "response": "It would be any line with slope 2, like y = 2x + 3"
-    },
-    ...
-  ],
-  "summary": "2 out of 3 students would raise their hand to answer this question."
-}
-```
+**Returns**: Student responses + base64-encoded MP3 audio
 
 ## Example Usage
 
@@ -175,59 +148,64 @@ for student in data["students"]:
 
 ```
 backend/
-├── src/
-│   └── rehearsed_multi_student/
-│       ├── api/              # FastAPI application
-│       │   └── main.py
-│       ├── agents/           # Student agent logic
-│       │   └── student_agent.py
-│       ├── models/           # Pydantic models
-│       │   └── schemas.py
-│       └── profiles/         # Student profiles
-│           ├── loader.py
-│           ├── algorithmic_student.yaml
-│           ├── visual_student.yaml
-│           └── struggling_student.yaml
-├── pyproject.toml
-└── README.md
+├── src/rehearsed_multi_student/
+│   ├── agents/               # AI agents with business logic
+│   │   ├── student_agent.py    # Student personalities + decisions
+│   │   └── feedback_agent.py   # Teacher coaching analysis
+│   ├── services/             # Stateless utilities  
+│   │   ├── tts_service.py      # Text-to-speech (Gemini TTS)
+│   │   └── lesson_analyzer.py  # Lesson plan → context extraction
+│   ├── models/               # Pydantic schemas
+│   │   ├── schemas.py
+│   │   └── feedback.py
+│   ├── profiles/             # Student YAML configs
+│   │   ├── algorithmic_student.yaml
+│   │   ├── visual_student.yaml
+│   │   └── struggling_student.yaml
+│   └── api/                  # FastAPI endpoints
+│       └── main.py
+├── tests/                    # Test files
+│   ├── test_agents.py
+│   ├── test_feedback.py
+│   └── test_lesson_context.py
+└── pyproject.toml
 ```
 
-## Student Profiles
+## Running Tests
 
-Student profiles are defined in YAML files with:
-- **Traits**: confidence, participation willingness, processing speed
-- **Strengths & Challenges**: Learning characteristics
-- **Hand-raising criteria**: What makes them participate
-- **Response patterns**: Typical language they use
-- **Thinking approach**: How they process information
-
-Edit the YAML files in `src/rehearsed_multi_student/profiles/` to customize student behavior.
-
-## Next Steps
-
-Future features to implement:
-- [ ] Dynamic agent generation: Given a profile template and lesson topic, generate custom student YAML
-- [ ] Audio streaming for student responses
-- [ ] More diverse student archetypes
-- [ ] Session memory (students remember previous questions)
-- [ ] Teacher feedback integration
-
-## Development
-
-### Run Tests
 ```bash
-# Run the simple test script
-poetry run python test_agents.py
+# All tests
+poetry run python -m pytest tests/
 
-# Run pytest (when tests are added)
-poetry run pytest
+# Specific tests
+poetry run python tests/test_lesson_context.py
+poetry run python tests/test_feedback.py
+poetry run python tests/test_agents.py
 ```
 
-### Format Code
-```bash
-poetry run black .
-poetry run isort .
-```
+## Tech Stack
+
+- **FastAPI**: REST API + SSE streaming
+- **Google GenAI**: Gemini 2.5 Flash for text generation
+- **Google Cloud TTS**: Gemini TTS for audio (gemini-2.5-flash-tts)
+- **Pydantic**: Data validation
+- **Poetry**: Dependency management
+
+## Workflow Example
+
+1. **Teacher uploads lesson plan** → `POST /lesson/setup`
+2. **Frontend stores lesson context** (grade level, objectives, etc.)
+3. **Teacher asks question** → `POST /ask?stream_feedback=true` (includes lesson_context)
+4. **Students respond** (adapted to grade level from lesson)
+5. **Teacher receives coaching feedback** (via SSE, evaluates against lesson objectives)
+
+## Cloud Deployment
+
+Designed for **Cloud Run**:
+- ✅ No disk I/O (PDFs via base64 inline data)
+- ✅ Stateless (all context in requests)  
+- ✅ ADC authentication
+- ✅ Container-ready
 
 ## License
 
