@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Tests
+tests/
+test_*.py
+*.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+API_DOCUMENTATION.md
+*.md
+
+# Sample data
+sample_lesson_plans/
+audio_output/
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.bak
