@@ -47,13 +47,13 @@ async def test_lesson_context_workflow():
     print("TESTING: Lesson Context Workflow (K-12 Adaptive)")
     print("="*80)
     
-    base_url = "http://localhost:8000"
+    base_url = "https://rehearsed-multi-student-api-847407960490.us-central1.run.app"
     
     # Step 1: Setup the lesson
     print("\n📚 STEP 1: Analyzing Lesson Plan...")
     print("-"*80)
     
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
         setup_response = await client.post(
             f"{base_url}/lesson/setup",
             json={"lesson_plan_text": SAMPLE_LESSON_PLAN}
@@ -84,7 +84,7 @@ async def test_lesson_context_workflow():
     teacher_question = "If I cut a pizza into 4 equal pieces and eat 1 piece, what fraction of the pizza did I eat?"
     print(f"\nTeacher: \"{teacher_question}\"")
     
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
         ask_response = await client.post(
             f"{base_url}/ask",
             json={
@@ -109,7 +109,7 @@ async def test_lesson_context_workflow():
     print("\n\n💡 STEP 3: Teacher receives coaching feedback...")
     print("-"*80)
     
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
         async with client.stream(
             "POST",
             f"{base_url}/ask?stream_feedback=true",
@@ -150,7 +150,7 @@ async def test_pdf_lesson_plan():
     print("TESTING: PDF Lesson Plan Analysis")
     print("="*80)
     
-    base_url = "http://localhost:8000"
+    base_url = "https://rehearsed-multi-student-api-847407960490.us-central1.run.app"
     
     # Load PDF and convert to base64
     pdf_path = Path("sample_lesson_plans/fishtank_linear_expressions_single_variable_equationsinequalities_lesson_8_20250919173218.pdf")
@@ -171,7 +171,7 @@ async def test_pdf_lesson_plan():
     print("\n📚 Analyzing PDF Lesson Plan...")
     print("-"*80)
     
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
         setup_response = await client.post(
             f"{base_url}/lesson/setup",
             json={
@@ -202,7 +202,7 @@ async def test_pdf_lesson_plan():
     teacher_question = "What's the first step in solving 3x + 5 = 14?"
     print(f"\nTeacher: \"{teacher_question}\"")
     
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
         ask_response = await client.post(
             f"{base_url}/ask",
             json={
@@ -229,7 +229,7 @@ async def test_pdf_lesson_plan():
 
 if __name__ == "__main__":
     print("\n🚀 Starting Lesson Context Tests...")
-    print("   Make sure server is running: poetry run uvicorn rehearsed_multi_student.api.main:app --port 8000")
+    print("   Testing against Cloud Run: https://rehearsed-multi-student-api-847407960490.us-central1.run.app")
     
     # Run both tests
     asyncio.run(test_lesson_context_workflow())

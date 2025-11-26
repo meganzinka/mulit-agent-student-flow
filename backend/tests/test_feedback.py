@@ -9,7 +9,7 @@ async def test_feedback_streaming():
     print("TESTING: Teacher Feedback with Server-Sent Events")
     print("="*80)
     
-    url = "http://localhost:8000/ask?stream_feedback=true"
+    url = "https://rehearsed-multi-student-api-847407960490.us-central1.run.app/ask?stream_feedback=true"
     
     # Test prompt
     request_data = {
@@ -20,7 +20,7 @@ async def test_feedback_streaming():
     print(f"\n📝 Teacher Prompt: {request_data['prompt']}")
     print("\n" + "-"*80)
     
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
         async with client.stream("POST", url, json=request_data) as response:
             print("\n🎓 STUDENT RESPONSES (Immediate):\n")
             
@@ -86,7 +86,7 @@ async def test_multi_turn_feedback():
     print("TESTING: Multi-Turn Conversation with Feedback")
     print("="*80)
     
-    url = "http://localhost:8000/ask?stream_feedback=true"
+    url = "https://rehearsed-multi-student-api-847407960490.us-central1.run.app/ask?stream_feedback=true"
     
     # Second question in a sequence
     request_data = {
@@ -107,7 +107,7 @@ async def test_multi_turn_feedback():
     print("   (After Alex answered about parallel lines)")
     print("\n" + "-"*80)
     
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
         async with client.stream("POST", url, json=request_data) as response:
             feedback_received = False
             
@@ -139,7 +139,7 @@ async def test_multi_turn_feedback():
 
 if __name__ == "__main__":
     print("\n🚀 Starting Server-Sent Events Test...")
-    print("   Make sure the server is running: poetry run uvicorn rehearsed_multi_student.api.main:app --reload")
+    print("   Testing against Cloud Run: https://rehearsed-multi-student-api-847407960490.us-central1.run.app")
     print()
     
     asyncio.run(test_feedback_streaming())
