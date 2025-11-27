@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: upbeat-lexicon-411217  # <-- update to your GCP project
+  PROJECT_ID: upbeat-lexicon-411217  
   REGION: us-central1
   SERVICE_NAME: rehearsed-multi-student-frontend
   REGISTRY: us-central1-docker.pkg.dev
