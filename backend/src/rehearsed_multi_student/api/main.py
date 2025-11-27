@@ -12,10 +12,13 @@ from rehearsed_multi_student.models.schemas import (
     MultiStudentResponse,
     LessonSetupRequest,
     LessonContext,
+    EndLessonRequest,
+    EndLessonResponse,
 )
 from rehearsed_multi_student.profiles.loader import ProfileLoader
 from rehearsed_multi_student.agents.student_agent import ParallelStudentOrchestrator
 from rehearsed_multi_student.agents.feedback_agent import FeedbackAgent
+from rehearsed_multi_student.agents.lesson_summary_agent import LessonSummaryAgent
 from rehearsed_multi_student.services.tts_service import TextToSpeechService
 from rehearsed_multi_student.services.lesson_analyzer import LessonAnalyzer
 
@@ -47,6 +50,9 @@ tts_service = TextToSpeechService()
 
 # Initialize feedback agent
 feedback_agent = FeedbackAgent()
+
+# Initialize lesson summary agent
+lesson_summary_agent = LessonSummaryAgent()
 
 # Initialize lesson analyzer
 lesson_analyzer = LessonAnalyzer()
@@ -372,6 +378,71 @@ async def setup_lesson(request: LessonSetupRequest):
     try:
         lesson_context = await lesson_analyzer.analyze_lesson_plan(request)
         return lesson_context
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/lesson/end", response_model=EndLessonResponse)
+async def end_lesson(request: EndLessonRequest):
+    """
+    End a lesson and receive comprehensive feedback.
+    
+    Analyzes the complete lesson transcript and provides:
+    - Summary of what happened (participation patterns, key moments)
+    - Overall narrative feedback
+    - Specific strengths with evidence from transcript
+    - Areas for growth with evidence from transcript
+    - Actionable next steps for improvement
+    - Celebration message
+    
+    The frontend should call this when the teacher is ready to end
+    the practice session and review their performance.
+    
+    Example:
+        POST /lesson/end
+        {
+          "lesson_context": {
+            "grade_level": "3rd grade",
+            "subject": "Mathematics",
+            "topic": "Fractions",
+            "learning_objectives": [...],
+            "key_concepts": [...],
+            "context_summary": "..."
+          },
+          "conversation_transcript": [
+            {"speaker": "Teacher", "message": "What is a fraction?"},
+            {"speaker": "Chipper", "message": "A fraction is..."},
+            ...
+          ]
+        }
+        
+        Returns:
+        {
+          "lesson_summary": {
+            "total_exchanges": 8,
+            "students_called_on": ["Chipper", "Vex"],
+            "participation_pattern": "...",
+            "key_moments": [...]
+          },
+          "overall_feedback": "...",
+          "strengths_and_growth": {
+            "strengths": [...],
+            "areas_for_growth": [...]
+          },
+          "next_steps": {
+            "immediate_actions": [...],
+            "practice_focus": "...",
+            "resources": [...]
+          },
+          "celebration": "..."
+        }
+    """
+    try:
+        summary = await lesson_summary_agent.generate_lesson_summary(
+            lesson_context=request.lesson_context,
+            conversation_transcript=request.conversation_transcript
+        )
+        return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

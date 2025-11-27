@@ -48,7 +48,7 @@ async def test_differentiation():
     base_url = "https://rehearsed-multi-student-api-847407960490.us-central1.run.app"
     
     print("\n" + "="*80)
-    print("TEST 1: ALGEBRA LESSON (Should favor Alex, challenge Jordan)")
+    print("TEST 1: ALGEBRA LESSON (Should favor Vex, challenge Riven)")
     print("="*80)
     
     async with httpx.AsyncClient(timeout=60.0, verify=False) as client:
@@ -71,7 +71,7 @@ async def test_differentiation():
             print()
     
     print("\n" + "="*80)
-    print("TEST 2: FRACTIONS LESSON (Should favor Maya, still accessible to all)")
+    print("TEST 2: FRACTIONS LESSON (Should favor Chipper, still accessible to all)")
     print("="*80)
     
     async with httpx.AsyncClient(timeout=60.0, verify=False) as client:

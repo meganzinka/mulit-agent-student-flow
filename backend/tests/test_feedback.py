@@ -97,14 +97,14 @@ async def test_multi_turn_feedback():
                 "message": "What would be a parallel line to y = 2x + 3?"
             },
             {
-                "speaker": "Alex",
+                "speaker": "Vex",
                 "message": "A parallel line would have the same slope but a different y-intercept, like y = 2x + 5."
             }
         ],
     }
     
     print(f"\n📝 Teacher Follow-Up: {request_data['prompt']}")
-    print("   (After Alex answered about parallel lines)")
+    print("   (After Vex answered about parallel lines)")
     print("\n" + "-"*80)
     
     async with httpx.AsyncClient(timeout=60.0, verify=False) as client:

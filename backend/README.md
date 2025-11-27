@@ -4,7 +4,7 @@ AI-powered classroom simulation system for teacher training with real-time feedb
 
 ## Features
 
-✅ **Parallel Student Agents**: 3 AI students (Alex, Maya, Jordan) with distinct learning styles  
+✅ **Parallel Student Agents**: 3 AI students (Vex, Chipper, Riven) with distinct learning styles  
 ✅ **K-12 Adaptive**: Students adapt to any grade level and topic via lesson context  
 ✅ **Real-Time Coaching**: SSE-based feedback on teacher questioning moves  
 ✅ **Audio Responses**: Gemini TTS generates student voice responses  
@@ -14,9 +14,9 @@ AI-powered classroom simulation system for teacher training with real-time feedb
 
 ## Student Profiles
 
-- **Alex** (Algorithmic): Step-by-step, procedural thinking
-- **Maya** (Visual): Visual/spatial reasoning, pattern recognition  
-- **Jordan** (Struggling): Needs support, uncertain participation
+- **Vex** (Algorithmic): Step-by-step, procedural thinking
+- **Chipper** (Visual): Visual/spatial reasoning, pattern recognition  
+- **Riven** (Struggling): Needs support, uncertain participation
 
 ## Setup
 
@@ -132,7 +132,7 @@ response = requests.post(
         "lesson_context": "Exploring perpendicular lines",
         "conversation_history": [
             {"speaker": "teacher", "message": "What's the slope of y = 3x + 2?"},
-            {"speaker": "Maya", "message": "It's 3"}
+            {"speaker": "Chipper", "message": "It's 3"}
         ]
     }
 )

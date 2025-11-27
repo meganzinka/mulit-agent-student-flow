@@ -8,7 +8,8 @@ Base URL: `http://localhost:8000` (development)
 3. [Ask Students (Text)](#ask-students-text)
 4. [Ask Students (With Audio)](#ask-students-with-audio)
 5. [Streaming Feedback (SSE)](#streaming-feedback-sse)
-6. [Data Models](#data-models)
+6. [End Lesson](#end-lesson)
+7. [Data Models](#data-models)
 
 ---
 
@@ -35,19 +36,19 @@ List all available student profiles.
   "students": [
     {
       "id": "algorithmic_thinker",
-      "name": "Alex",
+      "name": "Vex",
       "learning_style": "algorithmic",
       "description": "Step-by-step, formula-focused, procedural thinker"
     },
     {
       "id": "visual_thinker",
-      "name": "Maya",
+      "name": "Chipper",
       "learning_style": "visual",
       "description": "Diagram-focused, pattern recognition, spatial reasoning"
     },
     {
       "id": "struggling_learner",
-      "name": "Jordan",
+      "name": "Riven",
       "learning_style": "struggling",
       "description": "Low confidence, needs support, difficulty articulating"
     }
@@ -134,7 +135,7 @@ Send a teacher prompt to all students and get their text responses.
       "message": "What is a fraction?"
     },
     {
-      "speaker": "Maya",
+      "speaker": "Chipper",
       "message": "A fraction is like a part of something bigger!"
     }
   ]
@@ -155,7 +156,7 @@ Send a teacher prompt to all students and get their text responses.
   "students": [
     {
       "student_id": "algorithmic_thinker",
-      "student_name": "Alex",
+      "student_name": "Vex",
       "would_raise_hand": true,
       "confidence_score": 0.85,
       "thinking_process": "I know the pizza was cut into 4 pieces, so the bottom number is 4. I ate 1 piece, so the top number is 1.",
@@ -164,7 +165,7 @@ Send a teacher prompt to all students and get their text responses.
     },
     {
       "student_id": "visual_thinker",
-      "student_name": "Maya",
+      "student_name": "Chipper",
       "would_raise_hand": true,
       "confidence_score": 0.9,
       "thinking_process": "I can picture the pizza cut into 4 slices. If you take away 1 slice, that's 1 out of 4.",
@@ -173,7 +174,7 @@ Send a teacher prompt to all students and get their text responses.
     },
     {
       "student_id": "struggling_learner",
-      "student_name": "Jordan",
+      "student_name": "Riven",
       "would_raise_hand": false,
       "confidence_score": 0.5,
       "thinking_process": "Um, there were 4 pieces... and 1 was eaten... so maybe 1 and 4 go together somehow?",
@@ -206,7 +207,7 @@ Same as `/ask`, but each student includes:
 ```json
 {
   "student_id": "algorithmic_thinker",
-  "student_name": "Alex",
+  "student_name": "Vex",
   "would_raise_hand": true,
   "confidence_score": 0.85,
   "thinking_process": "...",
@@ -220,9 +221,9 @@ Same as `/ask`, but each student includes:
 - Encoding: Base64 string
 - Generated using: Gemini TTS (gemini-2.5-flash-tts)
 - Unique voices per student:
-  - Alex: Zubenelgenubi (male, methodical)
-  - Maya: Kore (female, animated)
-  - Jordan: Pulcherrima (female, hesitant)
+  - Vex: Zubenelgenubi (male, methodical)
+  - Chipper: Kore (female, animated)
+  - Riven: Pulcherrima (female, hesitant)
 
 **Decoding Audio (Frontend):**
 ```javascript
@@ -376,6 +377,200 @@ while (true) {
 
 ---
 
+## End Lesson
+
+### `POST /lesson/end`
+End the practice session and receive comprehensive feedback on the entire lesson.
+
+**Purpose:** Call this when the teacher is finished practicing. Analyzes the complete conversation transcript and provides detailed feedback, strengths, areas for growth, and actionable next steps.
+
+**Request:**
+```json
+{
+  "lesson_context": {
+    "grade_level": "3rd grade",
+    "subject": "Mathematics",
+    "topic": "Fractions - Understanding Parts of a Whole",
+    "learning_objectives": [
+      "Students will understand that a fraction represents a part of a whole",
+      "Students will identify numerator and denominator"
+    ],
+    "key_concepts": ["Fraction", "Numerator", "Denominator"],
+    "context_summary": "..."
+  },
+  "conversation_transcript": [
+    {
+      "speaker": "Teacher",
+      "message": "What is a fraction?"
+    },
+    {
+      "speaker": "Chipper",
+      "message": "A fraction is like a part of something bigger!"
+    },
+    {
+      "speaker": "Teacher",
+      "message": "Great! Can you give me an example?"
+    },
+    {
+      "speaker": "Chipper",
+      "message": "Like if you cut a pizza into 4 slices, each slice is 1/4"
+    }
+  ]
+}
+```
+
+**Request Fields:**
+- `lesson_context` (object, required): The same `LessonContext` from `/lesson/setup`
+- `conversation_transcript` (array, required): Complete history of all messages
+  - Include ALL teacher prompts and student responses
+  - Each message has `speaker` (Teacher or student name) and `message` fields
+
+**Response:**
+```json
+{
+  "lesson_summary": {
+    "total_exchanges": 8,
+    "students_called_on": ["Chipper", "Vex"],
+    "participation_pattern": "Primarily called on students who raised hands. Chipper participated 3 times, Vex 2 times, Riven was not called on.",
+    "key_moments": [
+      "Teacher used concrete pizza example to introduce fractions",
+      "Followed up with Chipper to deepen understanding of numerator/denominator",
+      "Vex provided procedural explanation of how to write fractions"
+    ]
+  },
+  "overall_feedback": "You facilitated a solid introductory lesson on fractions that aligned well with your 3rd grade learning objectives. Your use of the pizza example was developmentally appropriate and helped students visualize the concept. You successfully called on students who were confident and ready to share, which kept the lesson moving. There's opportunity to extend your questioning to include all three students, particularly Riven who never raised a hand but could benefit from scaffolded questions.",
+  "strengths_and_growth": {
+    "strengths": [
+      "Used concrete, relatable examples (pizza) that align with 3rd grade developmental level",
+      "Asked follow-up questions to deepen understanding, such as 'Can you give me an example?'",
+      "Clear focus on learning objectives throughout the lesson",
+      "Created a supportive environment where students felt comfortable sharing"
+    ],
+    "areas_for_growth": [
+      "Equity in participation - Riven was never called on despite being present. Consider using strategies to engage students who don't raise hands.",
+      "Question variety - Most questions were recall-based. Try incorporating more open-ended questions like 'Why do you think...?' or 'What would happen if...?'",
+      "Probing for reasoning - When students gave correct answers, you could press them to explain their mathematical thinking more explicitly"
+    ]
+  },
+  "next_steps": {
+    "immediate_actions": [
+      "In your next practice, intentionally call on a student who hasn't raised their hand and provide scaffolding",
+      "Try asking at least one 'Why?' or 'How do you know?' question to press for mathematical reasoning",
+      "Before the lesson, plan 2-3 questions at different complexity levels to differentiate for all learners"
+    ],
+    "practice_focus": "Focus on equity in participation - develop strategies to engage students with varying confidence levels",
+    "resources": [
+      "Read: 'Five Practices for Orchestrating Productive Mathematics Discussions' by Smith & Stein",
+      "Strategy: Use think-pair-share to give all students processing time before calling on anyone"
+    ]
+  },
+  "celebration": "Great work! You created a welcoming environment and kept the lesson focused on your learning goals. Your concrete examples really helped students grasp a tricky concept. With practice, you'll develop even more strategies to engage all learners. Keep up the thoughtful questioning! 🎉"
+}
+```
+
+**Frontend Flow:**
+1. Teacher completes practice lesson
+2. Click "End Lesson" button
+3. Frontend sends `POST /lesson/end` with lesson context and full transcript
+4. Display comprehensive feedback to teacher
+5. Teacher can review strengths, growth areas, and next steps
+
+**Frontend Implementation:**
+```javascript
+// React Component
+import { useState } from 'react';
+
+function EndLesson({ lessonContext, conversationHistory }) {
+  const [feedback, setFeedback] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleEndLesson = async () => {
+    setLoading(true);
+    
+    const response = await fetch('http://localhost:8000/lesson/end', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lesson_context: lessonContext,
+        conversation_transcript: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    setFeedback(data);
+    setLoading(false);
+  };
+
+  if (!feedback) {
+    return (
+      <button onClick={handleEndLesson} disabled={loading}>
+        {loading ? 'Generating Feedback...' : 'End Lesson'}
+      </button>
+    );
+  }
+
+  return (
+    <div className="lesson-feedback">
+      <h2>Lesson Summary</h2>
+      <p>Total Exchanges: {feedback.lesson_summary.total_exchanges}</p>
+      <p>Students Called On: {feedback.lesson_summary.students_called_on.join(', ')}</p>
+      <p>{feedback.lesson_summary.participation_pattern}</p>
+      
+      <h3>Key Moments</h3>
+      <ul>
+        {feedback.lesson_summary.key_moments.map((moment, i) => (
+          <li key={i}>{moment}</li>
+        ))}
+      </ul>
+
+      <h2>Overall Feedback</h2>
+      <p>{feedback.overall_feedback}</p>
+
+      <h2>Your Strengths</h2>
+      <ul>
+        {feedback.strengths_and_growth.strengths.map((strength, i) => (
+          <li key={i} className="strength">✅ {strength}</li>
+        ))}
+      </ul>
+
+      <h2>Areas for Growth</h2>
+      <ul>
+        {feedback.strengths_and_growth.areas_for_growth.map((area, i) => (
+          <li key={i} className="growth">📈 {area}</li>
+        ))}
+      </ul>
+
+      <h2>Next Steps</h2>
+      <h3>Try These in Your Next Lesson:</h3>
+      <ul>
+        {feedback.next_steps.immediate_actions.map((action, i) => (
+          <li key={i}>{action}</li>
+        ))}
+      </ul>
+      <p><strong>Practice Focus:</strong> {feedback.next_steps.practice_focus}</p>
+      
+      {feedback.next_steps.resources && (
+        <>
+          <h3>Recommended Resources:</h3>
+          <ul>
+            {feedback.next_steps.resources.map((resource, i) => (
+              <li key={i}>{resource}</li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <div className="celebration">
+        <h2>🎉 Celebration</h2>
+        <p>{feedback.celebration}</p>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
 ## Data Models
 
 ### LessonContext
@@ -395,7 +590,7 @@ while (true) {
 ```javascript
 /**
  * @typedef {Object} ConversationMessage
- * @property {string} speaker - "Teacher", "Alex", "Maya", "Jordan"
+ * @property {string} speaker - "Teacher", "Vex", "Chipper", "Riven"
  * @property {string} message
  */
 ```
@@ -405,7 +600,7 @@ while (true) {
 /**
  * @typedef {Object} StudentResponse
  * @property {string} student_id - "algorithmic_thinker", "visual_thinker", "struggling_learner"
- * @property {string} student_name - "Alex", "Maya", "Jordan"
+ * @property {string} student_name - "Vex", "Chipper", "Riven"
  * @property {boolean} would_raise_hand
  * @property {number} confidence_score - 0.0 - 1.0
  * @property {string} thinking_process - Internal reasoning
@@ -421,6 +616,57 @@ while (true) {
  * @property {('equity'|'wait_time'|'question_quality'|'follow_up'|'engagement')} category
  * @property {string} message - Specific, actionable feedback
  * @property {('info'|'suggestion'|'concern')} severity
+ */
+```
+
+### EndLessonRequest
+```javascript
+/**
+ * @typedef {Object} EndLessonRequest
+ * @property {LessonContext} lesson_context
+ * @property {ConversationMessage[]} conversation_transcript - Complete lesson transcript
+ */
+```
+
+### LessonSummary
+```javascript
+/**
+ * @typedef {Object} LessonSummary
+ * @property {number} total_exchanges - Number of teacher-student exchanges
+ * @property {string[]} students_called_on - Which students were called on
+ * @property {string} participation_pattern - Summary of participation patterns
+ * @property {string[]} key_moments - Notable moments in the lesson
+ */
+```
+
+### StrengthsAndGrowth
+```javascript
+/**
+ * @typedef {Object} StrengthsAndGrowth
+ * @property {string[]} strengths - What the teacher did well
+ * @property {string[]} areas_for_growth - Areas to improve
+ */
+```
+
+### NextSteps
+```javascript
+/**
+ * @typedef {Object} NextSteps
+ * @property {string[]} immediate_actions - Things to try in the next lesson
+ * @property {string} practice_focus - What skill to focus on
+ * @property {string[]} resources - Suggested resources (optional)
+ */
+```
+
+### EndLessonResponse
+```javascript
+/**
+ * @typedef {Object} EndLessonResponse
+ * @property {LessonSummary} lesson_summary
+ * @property {string} overall_feedback - Overall narrative feedback
+ * @property {StrengthsAndGrowth} strengths_and_growth
+ * @property {NextSteps} next_steps
+ * @property {string} celebration - Positive reinforcement message
  */
 ```
 
