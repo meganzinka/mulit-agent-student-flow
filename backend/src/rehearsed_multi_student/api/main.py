@@ -27,6 +27,7 @@ app = FastAPI(
     title="Rehearsed Multi-Student API",
     description="Parallel student agent system for teacher training",
     version="0.1.0",
+    root_path="/api"
 )
 
 # Add CORS middleware for frontend integration
