@@ -380,9 +380,13 @@ while (true) {
 ## End Lesson
 
 ### `POST /lesson/end`
-End the practice session and receive comprehensive feedback on the entire lesson.
+End the practice session and receive comprehensive feedback focused on the quality of mathematical discussion.
 
-**Purpose:** Call this when the teacher is finished practicing. Analyzes the complete conversation transcript and provides detailed feedback, strengths, areas for growth, and actionable next steps.
+**Purpose:** Call this when the teacher is finished practicing. This endpoint analyzes the complete conversation transcript and provides feedback laser-focused on the quality of mathematical discourse. Feedback includes:
+- Strengths in promoting mathematical discussion (e.g., use of math talk moves, pressing for reasoning, connecting ideas, use of representations, precision of mathematical language)
+- Areas for growth in mathematical discourse quality
+- Actionable next steps and strategies to improve future math discussions (e.g., revoicing, pressing for reasoning, connecting student ideas)
+- Celebration and encouragement
 
 **Request:**
 ```json
@@ -431,40 +435,41 @@ End the practice session and receive comprehensive feedback on the entire lesson
   "lesson_summary": {
     "total_exchanges": 8,
     "students_called_on": ["Chipper", "Vex"],
-    "participation_pattern": "Primarily called on students who raised hands. Chipper participated 3 times, Vex 2 times, Riven was not called on.",
+    "participation_pattern": "Chipper and Vex actively participated, responding to teacher prompts. Riven was present but not called on. Teacher used open-ended questions and concrete examples to engage students.",
     "key_moments": [
       "Teacher used concrete pizza example to introduce fractions",
-      "Followed up with Chipper to deepen understanding of numerator/denominator",
-      "Vex provided procedural explanation of how to write fractions"
+      "Chipper explained fractions using real-world context",
+      "Vex provided procedural explanation and reasoning for 1/4",
+      "Teacher asked for mathematical reasoning and pressed for explanation"
     ]
   },
-  "overall_feedback": "You facilitated a solid introductory lesson on fractions that aligned well with your 3rd grade learning objectives. Your use of the pizza example was developmentally appropriate and helped students visualize the concept. You successfully called on students who were confident and ready to share, which kept the lesson moving. There's opportunity to extend your questioning to include all three students, particularly Riven who never raised a hand but could benefit from scaffolded questions.",
+  "overall_feedback": "You facilitated a mathematical discussion that encouraged students to connect real-world examples to fraction concepts. You used open-ended questions and pressed for reasoning, which are key moves in math talk. Incorporating more math talk moves such as revoicing, connecting student ideas, and using representations will further enrich the mathematical discourse and deepen understanding.",
   "strengths_and_growth": {
     "strengths": [
-      "Used concrete, relatable examples (pizza) that align with 3rd grade developmental level",
-      "Asked follow-up questions to deepen understanding, such as 'Can you give me an example?'",
-      "Clear focus on learning objectives throughout the lesson",
-      "Created a supportive environment where students felt comfortable sharing"
+      "Used open-ended questions to elicit student thinking (e.g., 'What is a fraction?')",
+      "Pressed for mathematical reasoning by asking students to explain their answers",
+      "Connected math to real-world context (pizza example)",
+      "Created a supportive environment for sharing ideas"
     ],
     "areas_for_growth": [
-      "Equity in participation - Riven was never called on despite being present. Consider using strategies to engage students who don't raise hands.",
-      "Question variety - Most questions were recall-based. Try incorporating more open-ended questions like 'Why do you think...?' or 'What would happen if...?'",
-      "Probing for reasoning - When students gave correct answers, you could press them to explain their mathematical thinking more explicitly"
+      "Use more math talk moves such as revoicing and connecting student ideas",
+      "Incorporate mathematical representations (drawings, models, equations) and discuss them explicitly",
+      "Press for deeper reasoning and encourage students to build on each other's ideas"
     ]
   },
   "next_steps": {
     "immediate_actions": [
-      "In your next practice, intentionally call on a student who hasn't raised their hand and provide scaffolding",
-      "Try asking at least one 'Why?' or 'How do you know?' question to press for mathematical reasoning",
-      "Before the lesson, plan 2-3 questions at different complexity levels to differentiate for all learners"
+      "Try revoicing a student idea to clarify and highlight mathematical language",
+      "Ask students to compare or connect their ideas during discussion",
+      "Encourage students to use and discuss visual models or representations"
     ],
-    "practice_focus": "Focus on equity in participation - develop strategies to engage students with varying confidence levels",
+    "practice_focus": "Focus on using math talk moves (revoicing, pressing for reasoning, connecting ideas)",
     "resources": [
       "Read: 'Five Practices for Orchestrating Productive Mathematics Discussions' by Smith & Stein",
-      "Strategy: Use think-pair-share to give all students processing time before calling on anyone"
+      "Resource: https://www.nctm.org/Classroom-Resources/Illuminations/Lessons/Building-Fractions-with-Manipulatives/"
     ]
   },
-  "celebration": "Great work! You created a welcoming environment and kept the lesson focused on your learning goals. Your concrete examples really helped students grasp a tricky concept. With practice, you'll develop even more strategies to engage all learners. Keep up the thoughtful questioning! 🎉"
+  "celebration": "Great work facilitating a mathematical discussion! Your use of open-ended questions and real-world examples helped students connect to the math. With more math talk moves and explicit use of representations, you'll foster even richer mathematical discourse. Keep up the thoughtful questioning and encouragement! 🎉"
 }
 ```
 
