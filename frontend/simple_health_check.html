@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Backend Health Check</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    #result { margin-top: 1em; font-weight: bold; }
+    button { padding: 0.5em 1em; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Backend Health Check</h1>
+  <button onclick="checkHealth()">Check Backend</button>
+  <div id="result"></div>
+  <script>
+    async function checkHealth() {
+      document.getElementById('result').textContent = 'Checking...';
+      try {
+        const response = await fetch('https://rehearsed-multi-student-api-847407960490.us-central1.run.app/', { method: 'GET' });
+        const data = await response.json();
+        document.getElementById('result').textContent =
+          `Status: ${data.status} | Message: ${data.message} | Students Loaded: ${data.students_loaded}`;
+      } catch (err) {
+        document.getElementById('result').textContent = 'Error: Could not connect to backend.';
+      }
+    }
+  </script>
+</body>
+</html>
