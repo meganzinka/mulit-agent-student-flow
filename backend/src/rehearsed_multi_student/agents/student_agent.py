@@ -35,6 +35,67 @@ class StudentAgent:
         )
         self.model_name = model_name
     
+    def _get_learning_style_guidance(self, lesson_context: LessonContext) -> str:
+        """Generate specific guidance for how this student's learning style interacts with the lesson.
+        
+        Args:
+            lesson_context: The lesson context
+            
+        Returns:
+            Specific guidance string
+        """
+        topic_lower = lesson_context.topic.lower()
+        
+        # Algorithmic thinker
+        if self.profile.learning_style == "algorithmic":
+            if any(word in topic_lower for word in ["equation", "solving", "procedure", "algorithm", "formula"]):
+                return """This topic plays to YOUR STRENGTHS (procedures and formulas)!
+- You should be confident and eager to share step-by-step methods
+- Reference the specific procedure or algorithm you'd use
+- Break down your answer into clear, sequential steps
+- You might even mention which formula or rule applies"""
+            else:
+                return """This topic is CHALLENGING for you (less procedural, more conceptual)!
+- You might struggle to see a clear algorithm or procedure
+- You may ask "what's the formula?" or "what are the steps?"
+- You might give a technically correct but overly mechanical answer
+- You could miss the deeper conceptual understanding"""
+        
+        # Visual thinker
+        elif self.profile.learning_style == "visual":
+            if any(word in topic_lower for word in ["graph", "diagram", "visual", "geometry", "shape", "pattern", "fraction", "model"]):
+                return """This topic plays to YOUR STRENGTHS (visual/spatial)!
+- You should be excited to visualize or draw this
+- Describe what you can picture in your mind
+- Reference diagrams, graphs, or visual models
+- You might want to explain by drawing or showing something"""
+            else:
+                return """This topic is CHALLENGING for you (abstract/symbolic)!
+- You might struggle without a visual representation
+- You could say "I need to draw this out" or "can we see a diagram?"
+- Your answer might focus on trying to make a mental picture
+- You may have difficulty with purely algebraic or symbolic aspects"""
+        
+        # Struggling learner
+        elif self.profile.learning_style == "struggling":
+            # For struggling learners, most topics are challenging
+            if lesson_context.grade_level in ["1st grade", "2nd grade", "3rd grade", "4th grade"]:
+                return """As a struggling learner at this grade level:
+- You might have SOME familiarity with this from earlier lessons
+- But you probably have incomplete understanding or misconceptions
+- You might confuse this with something similar
+- You need concrete examples and may still get confused
+- Show realistic partial understanding, not complete confusion"""
+            else:
+                return """As a struggling learner at this advanced level:
+- This topic is likely VERY CHALLENGING - possibly beyond your current understanding
+- You may have foundational gaps that make this hard to grasp
+- You might try to connect to simpler examples you remember
+- You could have misconceptions or mix up concepts
+- Show realistic struggle - partial ideas, uncertainty, or asking for clarification"""
+        
+        return "Respond authentically based on your profile"
+    
     def _build_system_prompt(
         self, 
         lesson_context: Optional[LessonContext] = None,
@@ -70,7 +131,18 @@ Key Concepts:
 
 Context: {lesson_context.context_summary}
 
-IMPORTANT: Think and respond as a {lesson_context.grade_level} student learning about {lesson_context.topic}. Your language, reasoning depth, and mathematical sophistication should match this grade level."""
+CRITICAL INSTRUCTIONS FOR YOUR UNIQUE RESPONSE:
+- Think and respond as a {lesson_context.grade_level} student learning about {lesson_context.topic}
+- Your language, reasoning depth, and mathematical sophistication should match this grade level
+- MOST IMPORTANTLY: Filter this lesson through YOUR SPECIFIC learning style ({self.profile.learning_style})
+  
+  For {self.profile.name} ({self.profile.learning_style}):
+  {self._get_learning_style_guidance(lesson_context)}
+  
+- Do NOT give a generic "correct answer" - give YOUR answer based on YOUR strengths and challenges
+- If this topic connects to your strengths, show enthusiasm and depth
+- If this topic challenges you, show realistic struggle, partial understanding, or misconceptions
+- Your response should be DISTINCTLY different from what other students with different learning styles would say"""
         
         history_section = ""
         if conversation_history:
