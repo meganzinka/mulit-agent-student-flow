@@ -13,7 +13,6 @@ from .domain import (
 from .lesson_analyzer import (
     LessonSetupRequest,
     LessonContext,
-    StudentApproach,
     LessonAnalysisOutput,
     StudentApproachOutput,
 )
@@ -55,7 +54,6 @@ __all__ = [
     # Lesson Analyzer
     "LessonSetupRequest",
     "LessonContext",
-    "StudentApproach",
     "LessonAnalysisOutput",
     "StudentApproachOutput",
     # Student Agent
