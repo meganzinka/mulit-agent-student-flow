@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import json
 from typing import List, Optional
 from google import genai
 from google.genai import types
@@ -46,8 +47,13 @@ class StudentAgent:
         Returns:
             System prompt string
         """
+        # Extract this student's approach from lesson context if available
+        student_approach = None
+        if lesson_context and self.profile.id in lesson_context.student_approaches:
+            student_approach = lesson_context.student_approaches[self.profile.id]
+        
         return build_student_system_prompt(
-            self.profile, lesson_context, conversation_history
+            self.profile, lesson_context, conversation_history, student_approach
         )
 
     async def process_prompt(self, request: TeacherPromptRequest) -> StudentResponse:
@@ -64,7 +70,31 @@ class StudentAgent:
         )
 
         try:
-            # Call Gemini API
+            # Build the schema for structured output validation
+            student_response_schema = {
+                "type": "object",
+                "properties": {
+                    "would_raise_hand": {
+                        "type": "boolean",
+                        "description": "Whether the student would raise their hand"
+                    },
+                    "confidence_score": {
+                        "type": "number",
+                        "description": "Confidence level from 0.0 to 1.0"
+                    },
+                    "thinking_process": {
+                        "type": "string",
+                        "description": "The student's internal reasoning"
+                    },
+                    "response": {
+                        "type": "string",
+                        "description": "What the student would say if called on"
+                    }
+                },
+                "required": ["would_raise_hand", "confidence_score", "thinking_process", "response"]
+            }
+
+            # Call Gemini API with schema validation
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
                 model=self.model_name,
@@ -73,12 +103,11 @@ class StudentAgent:
                     system_instruction=system_prompt,
                     temperature=0.7,
                     response_mime_type="application/json",
+                    response_schema=student_response_schema,
                 ),
             )
 
             # Parse response
-            import json
-
             result = json.loads(response.text)
 
             return StudentResponse(

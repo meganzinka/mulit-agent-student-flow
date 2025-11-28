@@ -5,7 +5,7 @@ Prompts for student agents to authentically simulate student responses based on 
 
 from typing import List, Optional
 from ..models.domain import StudentProfile, ConversationMessage
-from ..models.lesson_analyzer import LessonContext
+from ..models.lesson_analyzer import LessonContext, StudentApproachOutput
 
 
 def _format_list(items: List[str]) -> str:
@@ -17,6 +17,7 @@ def build_student_system_prompt(
     profile: StudentProfile,
     lesson_context: Optional[LessonContext] = None,
     conversation_history: Optional[List[ConversationMessage]] = None,
+    student_approach: Optional[StudentApproachOutput] = None,
 ) -> str:
     """Build the system prompt for a student agent.
 
@@ -24,6 +25,7 @@ def build_student_system_prompt(
         profile: The student's profile with learning style, strengths, challenges
         lesson_context: Optional lesson context with grade, topic, objectives
         conversation_history: Optional conversation history
+        student_approach: Optional approach specific to THIS student for THIS lesson/problem
 
     Returns:
         System prompt string for the student agent
@@ -52,10 +54,23 @@ Context: {lesson_context.context_summary}
 CRITICAL INSTRUCTIONS FOR YOUR UNIQUE RESPONSE:
 - Think and respond as a {lesson_context.grade_level} student learning about {lesson_context.topic}
 - Your language, reasoning depth, and mathematical sophistication should match this grade level
-- MOST IMPORTANTLY: Filter this lesson through YOUR SPECIFIC learning style ({profile.learning_style})
+- MOST IMPORTANTLY: Filter this lesson through YOUR SPECIFIC learning style ({profile.learning_style})"""
+
+        # Add the student's specific approach for THIS problem if available
+        if student_approach:
+            context_section += f"""
+
+HOW YOU ({profile.name}) THINK ABOUT THIS SPECIFIC PROBLEM:
+{student_approach.thinking_approach}
+
+Use this thinking approach to authentically respond to the teacher's question. Your answer should reflect:
+- The way you naturally think about this problem
+- How your learning style ({profile.learning_style}) helps or challenges you
+- Your strengths and struggles as they apply to this specific topic"""
+        else:
+            context_section += f"""
   
-  For {profile.name} ({profile.learning_style}):
-  
+For {profile.name} ({profile.learning_style}):
 - Do NOT give a generic "correct answer" - give YOUR answer based on YOUR strengths and challenges
 - If this topic connects to your strengths, show enthusiasm and depth
 - If this topic challenges you, show realistic struggle, partial understanding, or misconceptions
