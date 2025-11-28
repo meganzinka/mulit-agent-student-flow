@@ -2,7 +2,6 @@
 
 import asyncio
 import os
-import json
 from typing import List, Optional
 from google import genai
 from google.genai import types
@@ -70,31 +69,7 @@ class StudentAgent:
         )
 
         try:
-            # Build the schema for structured output validation
-            student_response_schema = {
-                "type": "object",
-                "properties": {
-                    "would_raise_hand": {
-                        "type": "boolean",
-                        "description": "Whether the student would raise their hand"
-                    },
-                    "confidence_score": {
-                        "type": "number",
-                        "description": "Confidence level from 0.0 to 1.0"
-                    },
-                    "thinking_process": {
-                        "type": "string",
-                        "description": "The student's internal reasoning"
-                    },
-                    "response": {
-                        "type": "string",
-                        "description": "What the student would say if called on"
-                    }
-                },
-                "required": ["would_raise_hand", "confidence_score", "thinking_process", "response"]
-            }
-
-            # Call Gemini API with schema validation
+            # Call Gemini API with proper Pydantic schema validation
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
                 model=self.model_name,
@@ -103,21 +78,18 @@ class StudentAgent:
                     system_instruction=system_prompt,
                     temperature=0.7,
                     response_mime_type="application/json",
-                    response_schema=student_response_schema,
+                    response_schema=StudentResponse,
                 ),
             )
 
-            # Parse response
-            result = json.loads(response.text)
-
-            return StudentResponse(
-                student_id=self.profile.id,
-                student_name=self.profile.name,
-                would_raise_hand=result.get("would_raise_hand", False),
-                confidence_score=result.get("confidence_score", 0.0),
-                thinking_process=result.get("thinking_process", ""),
-                response=result.get("response"),
-            )
+            # Parse response and create StudentResponse with student identity
+            student_response = StudentResponse.model_validate_json(response.text)
+            
+            # Ensure student ID and name are set correctly
+            student_response.student_id = self.profile.id
+            student_response.student_name = self.profile.name
+            
+            return student_response
 
         except Exception as e:
             # Fallback response in case of error

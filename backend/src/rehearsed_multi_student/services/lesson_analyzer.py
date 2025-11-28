@@ -83,7 +83,7 @@ class LessonAnalyzer:
         # Build system prompt that includes all student profiles
         system_prompt = self._build_analysis_prompt(student_profiles)
 
-        # Call Gemini once with structured output
+        # Call Gemini once with structured output using schema validation
         response = await asyncio.to_thread(
             self.client.models.generate_content,
             model=self.model_id,
@@ -92,6 +92,7 @@ class LessonAnalyzer:
                 system_instruction=system_prompt,
                 temperature=0.3,
                 response_mime_type="application/json",
+                response_schema=LessonAnalysisOutput,
             ),
         )
 

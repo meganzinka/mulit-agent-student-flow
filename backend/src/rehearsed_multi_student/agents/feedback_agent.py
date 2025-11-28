@@ -104,32 +104,21 @@ class FeedbackAgent:
         
         analysis_prompt = "\n".join(prompt_parts)
         
-        # Generate feedback without schema constraint - simpler and more reliable
+        # Generate feedback with schema validation
         response = await self.client.aio.models.generate_content(
             model=self.model_id,
             contents=analysis_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=get_feedback_system_prompt(),
                 temperature=0.7,  # Allow some variation in wording
+                response_mime_type="application/json",
+                response_schema=FeedbackAnalysisOutput,
             )
         )
         
         # Parse structured output
         try:
-            # Try to extract JSON from response
-            response_text = response.text
-            
-            # If the response is wrapped in markdown code blocks, extract it
-            if "```json" in response_text:
-                json_start = response_text.index("```json") + 7
-                json_end = response_text.index("```", json_start)
-                response_text = response_text[json_start:json_end].strip()
-            elif "```" in response_text:
-                json_start = response_text.index("```") + 3
-                json_end = response_text.index("```", json_start)
-                response_text = response_text[json_start:json_end].strip()
-            
-            feedback_output = FeedbackAnalysisOutput.model_validate_json(response_text)
+            feedback_output = FeedbackAnalysisOutput.model_validate_json(response.text)
             return TeacherFeedback(
                 question_type=feedback_output.question_type,
                 feedback=feedback_output.feedback,
