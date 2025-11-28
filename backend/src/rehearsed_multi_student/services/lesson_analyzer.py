@@ -14,7 +14,7 @@ from typing import List
 from google import genai
 from google.genai import types
 
-from ..models.lesson_analyzer import LessonSetupRequest, LessonContext, StudentApproach
+from ..models.lesson_analyzer import LessonSetupRequest, LessonContext
 from ..models.lesson_analyzer.outputs import LessonAnalysisOutput
 from ..models.domain import StudentProfile
 from ..prompts import get_lesson_analysis_system_prompt
@@ -99,11 +99,7 @@ class LessonAnalyzer:
             
             # Convert to LessonContext with student approaches indexed by ID
             student_approaches = {
-                approach.student_id: StudentApproach(
-                    student_id=approach.student_id,
-                    student_name=approach.student_name,
-                    thinking_approach=approach.thinking_approach,
-                )
+                approach.student_id: approach
                 for approach in analysis_output.student_approaches
             }
             
@@ -115,7 +111,6 @@ class LessonAnalyzer:
                 key_concepts=analysis_output.key_concepts,
                 context_summary=analysis_output.context_summary,
                 mathematical_problem=analysis_output.mathematical_problem,
-                subskills=analysis_output.subskills,
                 student_approaches=student_approaches,
             )
         except (json.JSONDecodeError, Exception) as e:
@@ -134,41 +129,30 @@ class LessonAnalyzer:
     def _build_analysis_prompt(self, student_profiles: List[StudentProfile]) -> str:
         """Build system prompt that includes all student profiles.
         
+        Pulls the base prompt dynamically and appends student profile context.
+        
         Args:
             student_profiles: List of student profiles to analyze approaches for
             
         Returns:
-            System prompt string
+            System prompt string with base prompt + student profiles
         """
         base_prompt = get_lesson_analysis_system_prompt()
         
         # Add student profiles to the prompt
         profiles_text = "\n".join([
-            f"""
-STUDENT PROFILE: {profile.name}
+            f"""STUDENT PROFILE: {profile.name}
 - ID: {profile.id}
 - Learning Style: {profile.learning_style}
 - Description: {profile.description}
 - Thinking Approach: {profile.thinking_approach}
 - Strengths: {', '.join(profile.strengths)}
-- Challenges: {', '.join(profile.challenges)}
-"""
+- Challenges: {', '.join(profile.challenges)}"""
             for profile in student_profiles
         ])
         
         return f"""{base_prompt}
 
-For each student profile below, also analyze how that specific student would approach the problem.
-
 STUDENT PROFILES TO ANALYZE:
-{profiles_text}
-
-Include in your response:
-1. Core lesson analysis (grade level, subject, topic, objectives, concepts, context summary)
-2. The specific mathematical problem or scenario
-3. Key subskills/success criteria for high-quality discourse on this problem
-4. For EACH student profile above:
-   - Their thinking approach to this specific problem (how they would naturally think about it)
-
-Return as JSON with the schema matching the required structure."""
+{profiles_text}"""
 
