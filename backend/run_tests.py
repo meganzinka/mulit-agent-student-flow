@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from backend.tests.integration.test_lesson_context import test_lesson_context_workflow, test_pdf_lesson_plan
-from tests.test_feedback import test_feedback_streaming, test_multi_turn_feedback
+from backend.tests.integration.test_feedback import test_feedback_streaming, test_multi_turn_feedback
 
 
 async def run_all_tests():
