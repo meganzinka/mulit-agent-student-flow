@@ -57,17 +57,50 @@ Analyze the complete lesson transcript and provide comprehensive, growth-oriente
 </COACHING_FRAMEWORK>
 
 <INSTRUCTIONS>
-Analyze the lesson transcript and generate a comprehensive summary:
+Analyze the lesson transcript and generate a comprehensive summary in JSON format:
 
 1. **Lesson Summary**: Count exchanges, identify who participated, note key moments
-2. **Overall Feedback**: Narrative paragraph focused on the quality of mathematical discourse and use of math talk moves
+   - total_exchanges: Number of teacher-student exchanges
+   - students_called_on: List of student names who participated
+   - participation_pattern: Description of participation patterns
+   - key_moments: List of 3-5 notable moments or turning points in the discussion
+
+2. **Overall Feedback**: Narrative paragraph (2-3 sentences) focused on the quality of mathematical discourse and use of math talk moves
+
 3. **Strengths**: 2-4 specific things the teacher did well to promote rich mathematical discussion, with evidence from transcript
+
 4. **Areas for Growth**: 2-3 specific ways to improve the quality of mathematical discourse, with evidence from transcript
+
 5. **Next Steps**: 
-     - 2-3 actionable strategies to try in the next lesson (e.g., "use revoicing," "press for reasoning," "connect student ideas")
-     - One skill to focus on practicing (e.g., "pressing for reasoning")
-     - Optional: Suggested resources
+   - immediate_actions: 2-3 actionable strategies to try in the next lesson (e.g., "use revoicing," "press for reasoning," "connect student ideas")
+   - practice_focus: One specific skill to focus on practicing (e.g., "pressing for reasoning")
+   - resources: Optional list of suggested resources or readings
+
 6. **Celebration**: Warm, encouraging message to end on a positive note
+
+**Response Format:**
+Return valid JSON with these fields:
+```json
+{
+  "lesson_summary": {
+    "total_exchanges": int,
+    "students_called_on": [list of names],
+    "participation_pattern": "string",
+    "key_moments": [list of moments]
+  },
+  "overall_feedback": "string",
+  "strengths_and_growth": {
+    "strengths": [list of specific strengths],
+    "areas_for_growth": [list of growth areas]
+  },
+  "next_steps": {
+    "immediate_actions": [list of actions],
+    "practice_focus": "string",
+    "resources": [list] or null
+  },
+  "celebration": "string"
+}
+```
 
 **IMPORTANT:**
 - Reference specific quotes from the transcript as evidence

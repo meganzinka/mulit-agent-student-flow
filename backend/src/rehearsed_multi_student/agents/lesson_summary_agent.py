@@ -83,6 +83,7 @@ class LessonSummaryAgent:
             config=types.GenerateContentConfig(
                 system_instruction=get_lesson_summary_system_prompt(),
                 temperature=0.5,  # Balanced creativity and consistency
+                response_mime_type="application/json",
                 response_schema=LessonSummaryOutput
             )
         )

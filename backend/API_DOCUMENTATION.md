@@ -1,6 +1,15 @@
 # API Documentation - Rehearsed Multi-Student Backend
 
-Base URL: `http://localhost:8000` (development)
+Base URL: `http://localhost:8000/api` (development)
+
+**Note:** All endpoints are prefixed with `/api` for load balancer routing. When deployed to Cloud Run behind a load balancer, the base URL will be `https://demo.rehearsed.io/api`.
+
+**Focus:** All feedback provided by this API is laser-focused on the quality of mathematical discourse, including:
+- Use of math talk moves (revoicing, asking for explanations, pressing for reasoning, connecting ideas)
+- Building on and connecting student ideas
+- Use and discussion of mathematical representations (drawings, models, equations)
+- Precision and clarity of mathematical language
+- Surfacing and addressing misconceptions
 
 ## Table of Contents
 1. [Health & Discovery](#health--discovery)
@@ -15,7 +24,7 @@ Base URL: `http://localhost:8000` (development)
 
 ## Health & Discovery
 
-### `GET /`
+### `GET /api/`
 Health check endpoint.
 
 **Response:**
@@ -27,7 +36,7 @@ Health check endpoint.
 }
 ```
 
-### `GET /students`
+### `GET /api/students`
 List all available student profiles.
 
 **Response:**
@@ -60,10 +69,17 @@ List all available student profiles.
 
 ## Lesson Setup
 
-### `POST /lesson/setup`
+### `POST /api/lesson/setup`
 Analyze a lesson plan (text or PDF) and extract structured context.
 
-**Purpose:** Use this at the beginning of a session. The returned `LessonContext` should be stored in the frontend and included in subsequent `/ask` requests so students adapt to the grade level and topic.
+**Purpose:** Use this at the beginning of a session. The returned `LessonContext` should be stored in the frontend and included in subsequent `/api/ask` requests so students adapt to the grade level and topic. 
+
+The lesson analyzer calls Gemini to extract:
+- Grade level, subject, and topic
+- Learning objectives and key concepts
+- Context summary (how students at this level think about the topic)
+- The mathematical problem being discussed
+- How each student profile would approach this problem
 
 **Request:**
 ```json
@@ -96,22 +112,46 @@ Analyze a lesson plan (text or PDF) and extract structured context.
     "Equal parts",
     "Whole"
   ],
-  "context_summary": "In this 3rd grade lesson, students are introduced to fractions for the first time. At this developmental level, students need concrete visual representations (like pizza slices) to understand the concept. They should be thinking about fractions in terms of parts of physical objects rather than abstract numbers."
+  "context_summary": "In this 3rd grade lesson, students are introduced to fractions for the first time. At this developmental level, students need concrete visual representations (like pizza slices) to understand the concept. They should be thinking about fractions in terms of parts of physical objects rather than abstract numbers.",
+  "mathematical_problem": "If you cut a pizza into 4 equal pieces and eat 1 piece, what fraction of the pizza did you eat?",
+  "student_approaches": {
+    "algorithmic_thinker": {
+      "student_id": "algorithmic_thinker",
+      "student_name": "Vex",
+      "approach_description": "Vex will focus on the procedural steps: identifying the whole (4 pieces), counting the part (1 piece), and forming the fraction 1/4. Prefers explicit instructions and formulas.",
+      "strengths": ["Systematic thinking", "Clear step-by-step reasoning"],
+      "misconceptions": ["May struggle with non-standard representations", "Might rely too heavily on procedures without understanding"]
+    },
+    "visual_thinker": {
+      "student_id": "visual_thinker",
+      "student_name": "Chipper",
+      "approach_description": "Chipper will visualize the pizza as circles or rectangles divided into parts. Uses mental images and patterns to understand fractions.",
+      "strengths": ["Spatial reasoning", "Pattern recognition"],
+      "misconceptions": ["May have difficulty with abstract notation", "Might struggle when visuals aren't available"]
+    },
+    "struggling_learner": {
+      "student_id": "struggling_learner",
+      "student_name": "Riven",
+      "approach_description": "Riven needs concrete, real-world examples and support. May struggle with both abstract thinking and visual representations, requiring step-by-step guidance.",
+      "strengths": ["Responds to encouragement", "Benefits from concrete examples"],
+      "misconceptions": ["Low confidence", "May confuse the numerator and denominator"]
+    }
+  }
 }
 ```
 
 **Frontend Flow:**
 1. User uploads lesson plan (text or PDF)
 2. Convert PDF to base64 if needed
-3. Call `POST /lesson/setup`
+3. Call `POST /api/lesson/setup`
 4. **Store the returned `LessonContext` in session state**
-5. Include it in all subsequent `/ask` requests
+5. Include it in all subsequent `/api/ask` requests
 
 ---
 
 ## Ask Students (Text)
 
-### `POST /ask`
+### `POST /api/ask`
 Send a teacher prompt to all students and get their text responses.
 
 **Query Parameters:**
@@ -193,8 +233,8 @@ See [Streaming Feedback (SSE)](#streaming-feedback-sse) section.
 
 ## Ask Students (With Audio)
 
-### `POST /ask/with-audio`
-Same as `/ask` but includes audio generation for student responses.
+### `POST /api/ask/with-audio`
+Same as `/api/ask` but includes audio generation for student responses.
 
 **Query Parameters:**
 - `stream_feedback` (boolean, optional): Same as `/ask`
@@ -240,8 +280,8 @@ audio.play();
 
 ## Streaming Feedback (SSE)
 
-### `POST /ask?stream_feedback=true`
-### `POST /ask/with-audio?stream_feedback=true`
+### `POST /api/ask?stream_feedback=true`
+### `POST /api/ask/with-audio?stream_feedback=true`
 
 When `stream_feedback=true`, the response is a **Server-Sent Events (SSE)** stream.
 
@@ -265,20 +305,21 @@ Each coaching insight is streamed as it's generated.
 
 ```
 event: feedback_insight
-data: {"category":"question_quality","message":"Your question 'If I cut a pizza into 4 equal pieces and eat 1 piece, what fraction did I eat?' effectively uses a concrete example (pizza) that's developmentally appropriate for 3rd graders learning fractions for the first time. This aligns well with your learning objective of helping students understand fractions as parts of a whole.","severity":"info"}
+data: {"category":"question_quality","message":"You asked an open-ended question that invites students to share their thinking. This is a great way to surface student understanding before correcting misconceptions.","severity":"info"}
 ```
 
-**Insight Categories:**
-- `equity` - Who's being called on, participation patterns
-- `wait_time` - Pausing for thinking time
-- `question_quality` - Purposefulness of questions
-- `follow_up` - Quality of follow-up questions
-- `engagement` - Student engagement patterns
+**Insight Categories (for backward compatibility):**
+- `equity` - Participation and access patterns
+- `question_quality` - Effectiveness of the teacher's question
+- `engagement` - Student engagement levels
+- Other categories based on mathematical discourse analysis
 
 **Severity Levels:**
 - `info` - Positive observation, celebrate wins
 - `suggestion` - Room for improvement
 - `concern` - Important issue to address
+
+**Note:** The feedback now focuses exclusively on mathematical discourse quality (math talk moves, reasoning, representations, precision of language, misconception handling) rather than general classroom management strategies.
 
 #### `feedback_complete`
 Overall summary of the interaction.
@@ -306,7 +347,7 @@ data: {"error":"Feedback generation failed: ..."}
 
 **Frontend Implementation (JavaScript):**
 ```javascript
-const eventSource = new EventSource('http://localhost:8000/ask?stream_feedback=true', {
+const eventSource = new EventSource('http://localhost:8000/api/ask?stream_feedback=true', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -348,7 +389,7 @@ eventSource.addEventListener('error', (e) => {
 **Note:** For a simple POST request with SSE, you may need to use `fetch` with streaming instead of `EventSource`:
 
 ```javascript
-const response = await fetch('http://localhost:8000/ask?stream_feedback=true', {
+const response = await fetch('http://localhost:8000/api/ask?stream_feedback=true', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ prompt: "...", lesson_context: {...} })
@@ -379,7 +420,7 @@ while (true) {
 
 ## End Lesson
 
-### `POST /lesson/end`
+### `POST /api/lesson/end`
 End the practice session and receive comprehensive feedback focused on the quality of mathematical discussion.
 
 **Purpose:** Call this when the teacher is finished practicing. This endpoint analyzes the complete conversation transcript and provides feedback laser-focused on the quality of mathematical discourse. Feedback includes:
@@ -476,7 +517,7 @@ End the practice session and receive comprehensive feedback focused on the quali
 **Frontend Flow:**
 1. Teacher completes practice lesson
 2. Click "End Lesson" button
-3. Frontend sends `POST /lesson/end` with lesson context and full transcript
+3. Frontend sends `POST /api/lesson/end` with lesson context and full transcript
 4. Display comprehensive feedback to teacher
 5. Teacher can review strengths, growth areas, and next steps
 
@@ -492,7 +533,7 @@ function EndLesson({ lessonContext, conversationHistory }) {
   const handleEndLesson = async () => {
     setLoading(true);
     
-    const response = await fetch('http://localhost:8000/lesson/end', {
+    const response = await fetch('http://localhost:8000/api/lesson/end', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -588,6 +629,17 @@ function EndLesson({ lessonContext, conversationHistory }) {
  * @property {string[]} learning_objectives
  * @property {string[]} key_concepts
  * @property {string} context_summary - How students at this level think about the topic
+ * @property {string} mathematical_problem - The specific problem being discussed (e.g., "If you cut a pizza...")
+ * @property {Object<string, StudentApproachOutput>} student_approaches - How each student profile approaches this problem, indexed by student_id
+ */
+
+/**
+ * @typedef {Object} StudentApproachOutput
+ * @property {string} student_id - e.g., "algorithmic_thinker"
+ * @property {string} student_name - e.g., "Vex"
+ * @property {string} approach_description - How this student would approach the problem
+ * @property {string[]} strengths - Cognitive strengths for this topic
+ * @property {string[]} misconceptions - Common misconceptions this student might have
  */
 ```
 
@@ -618,9 +670,19 @@ function EndLesson({ lessonContext, conversationHistory }) {
 ```javascript
 /**
  * @typedef {Object} FeedbackInsight
- * @property {('equity'|'wait_time'|'question_quality'|'follow_up'|'engagement')} category
- * @property {string} message - Specific, actionable feedback
- * @property {('info'|'suggestion'|'concern')} severity
+ * @property {string} category - Category of insight (e.g., 'question_quality', 'equity', 'engagement')
+ * @property {string} message - Feedback message (specific, actionable)
+ * @property {('info'|'suggestion'|'concern')} severity - Severity level
+ */
+```
+
+### TeacherFeedback (Real-time coaching feedback)
+```javascript
+/**
+ * @typedef {Object} TeacherFeedback
+ * @property {string|null} question_type - Type of question demonstrated: 'build_on', 'probing', 'visibility', or null
+ * @property {string} feedback - Analysis of the teacher's statement. What they did well, areas to improve. Specific and grounded in the mathematical problem and student responses.
+ * @property {string} suggestion - Actionable coaching suggestion. Framed as something to consider or try next. Focuses on strengthening mathematical discourse.
  */
 ```
 
@@ -628,8 +690,8 @@ function EndLesson({ lessonContext, conversationHistory }) {
 ```javascript
 /**
  * @typedef {Object} EndLessonRequest
- * @property {LessonContext} lesson_context
- * @property {ConversationMessage[]} conversation_transcript - Complete lesson transcript
+ * @property {LessonContext} lesson_context - The lesson that was taught (from /api/lesson/setup)
+ * @property {ConversationMessage[]} conversation_transcript - Complete transcript of all messages during the lesson
  */
 ```
 
@@ -690,7 +752,7 @@ function LessonSetup() {
   const handleFileUpload = async (file) => {
     const pdfBase64 = await convertFileToBase64(file);
 
-    const response = await fetch('http://localhost:8000/lesson/setup', {
+    const response = await fetch('http://localhost:8000/api/lesson/setup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -725,7 +787,7 @@ function AskQuestion({ lessonContext }) {
   const [question, setQuestion] = useState('');
 
   const askStudents = async () => {
-    const response = await fetch('http://localhost:8000/ask/with-audio?stream_feedback=true', {
+    const response = await fetch('http://localhost:8000/api/ask/with-audio?stream_feedback=true', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

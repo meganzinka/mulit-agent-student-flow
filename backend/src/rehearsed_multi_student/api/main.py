@@ -7,7 +7,7 @@ from pathlib import Path
 import json
 import asyncio
 
-from rehearsed_multi_student.models import (
+from rehearsed_multi_student.models.schemas import (
     TeacherPromptRequest,
     MultiStudentResponse,
     LessonSetupRequest,
