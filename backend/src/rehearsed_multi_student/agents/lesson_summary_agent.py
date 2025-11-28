@@ -3,15 +3,15 @@ import json
 from typing import List
 from google import genai
 from google.genai import types
-from ..models.schemas import (
-    ConversationMessage,
-    LessonContext,
+from ..models.domain import ConversationMessage
+from ..models.lesson_analyzer import LessonContext
+from ..models.lesson_summary_agent import (
     EndLessonResponse,
     LessonSummary,
     StrengthsAndGrowth,
     NextSteps,
+    LessonSummaryOutput,
 )
-from ..models.outputs import LessonSummaryOutput
 from ..prompts import get_lesson_summary_system_prompt
 
 

@@ -4,7 +4,7 @@ import base64
 from typing import Optional
 from google.cloud import texttospeech
 
-from rehearsed_multi_student.models.schemas import VoiceSettings
+from rehearsed_multi_student.models.domain import VoiceSettings
 
 
 class TextToSpeechService:

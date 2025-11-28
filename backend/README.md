@@ -149,38 +149,169 @@ for student in data["students"]:
 ```
 backend/
 ├── src/rehearsed_multi_student/
-│   ├── agents/               # AI agents with business logic
-│   │   ├── student_agent.py    # Student personalities + decisions
-│   │   └── feedback_agent.py   # Teacher coaching analysis
-│   ├── services/             # Stateless utilities  
-│   │   ├── tts_service.py      # Text-to-speech (Gemini TTS)
-│   │   └── lesson_analyzer.py  # Lesson plan → context extraction
-│   ├── models/               # Pydantic schemas
-│   │   ├── schemas.py
-│   │   └── feedback.py
-│   ├── profiles/             # Student YAML configs
+│   ├── agents/                   # AI agents with business logic
+│   │   ├── student_agent.py        # Parallel student simulator
+│   │   ├── feedback_agent.py       # Real-time teaching feedback
+│   │   └── lesson_summary_agent.py # End-of-lesson comprehensive feedback
+│   ├── services/                # Stateless business logic services
+│   │   ├── tts_service.py         # Text-to-speech (Gemini TTS)
+│   │   └── lesson_analyzer.py     # Lesson plan → context + student approaches
+│   ├── models/                  # Pydantic schemas organized by component
+│   │   ├── domain.py              # Shared: StudentProfile, ConversationMessage, VoiceSettings
+│   │   ├── lesson_analyzer/       # Lesson analyzer component
+│   │   │   ├── request.py           # Input: LessonSetupRequest
+│   │   │   ├── outputs.py           # LLM output: LessonAnalysisOutput
+│   │   │   └── context.py           # Service output: LessonContext + StudentApproach
+│   │   ├── student_agent/        # Student agent component
+│   │   │   ├── request.py           # Input: TeacherPromptRequest
+│   │   │   └── response.py          # Output: StudentResponse, MultiStudentResponse
+│   │   ├── feedback_agent/       # Feedback agent component
+│   │   │   ├── request.py           # Input: FeedbackContext
+│   │   │   └── response.py          # Output: TeacherFeedback
+│   │   └── lesson_summary_agent/ # Lesson summary agent component
+│   │       ├── request.py           # Input: EndLessonRequest
+│   │       ├── outputs.py           # LLM output: LessonSummaryOutput
+│   │       └── response.py          # Output: EndLessonResponse
+│   ├── profiles/                # Student personality configs (YAML)
 │   │   ├── algorithmic_student.yaml
 │   │   ├── visual_student.yaml
 │   │   └── struggling_student.yaml
-│   └── api/                  # FastAPI endpoints
-│       └── main.py
-├── tests/                    # Test files
+│   ├── prompts/                 # LLM system prompts organized by component
+│   │   ├── student_agent_prompts.py
+│   │   ├── feedback_agent_prompts.py
+│   │   ├── lesson_analyzer_prompts.py
+│   │   └── lesson_summary_prompts.py
+│   ├── api/                     # FastAPI endpoints
+│   │   └── main.py
+│   └── config.py               # Application configuration
+├── tests/                       # Integration and unit tests
 │   ├── test_agents.py
 │   ├── test_feedback.py
-│   └── test_lesson_context.py
-└── pyproject.toml
+│   ├── test_lesson_context.py
+│   ├── test_differentiation.py
+│   └── test_end_lesson.py
+├── pyproject.toml
+├── run_tests.py               # Integration test runner
+└── README.md
+```
+
+## Data Model Architecture
+
+The models are organized by **component** rather than "type of model", making it easy to understand what each component needs:
+
+### Lesson Analyzer Component
+```
+Input:  LessonSetupRequest (lesson plan text/PDF)
+         ↓
+   [Gemini Analysis]
+         ↓
+Output: LessonContext (includes student approaches for each profile)
+```
+
+### Student Agent Component
+```
+Input:  TeacherPromptRequest (teacher question + lesson context + conversation)
+         ↓
+   [Gemini Generation]
+         ↓
+Output: StudentResponse (raise hand?, confidence, response text, thinking)
+```
+
+### Feedback Agent Component
+```
+Input:  FeedbackContext (lesson context + conversation + latest teacher move)
+         ↓
+   [Gemini Analysis]
+         ↓
+Output: TeacherFeedback (coaching insights on math discourse quality)
+```
+
+### Lesson Summary Agent Component
+```
+Input:  EndLessonRequest (lesson context + full transcript)
+         ↓
+   [Gemini Analysis]
+         ↓
+Output: EndLessonResponse (comprehensive feedback, strengths, next steps)
 ```
 
 ## Running Tests
 
 ```bash
-# All tests
-poetry run python -m pytest tests/
+# All tests (requires pytest and dev dependencies)
+poetry run pytest tests/
 
-# Specific tests
-poetry run python tests/test_lesson_context.py
-poetry run python tests/test_feedback.py
-poetry run python tests/test_agents.py
+# Specific test
+poetry run pytest tests/test_agents.py -v
+
+# Integration tests against deployed API
+poetry run python run_tests.py
+```
+
+## Key Architectural Concepts
+
+### Single Lesson Analysis, Multiple Interpretations
+When a teacher uploads a lesson plan:
+1. **Lesson Analyzer** calls Gemini **once** to extract:
+   - Core lesson info (grade level, topic, objectives)
+   - Mathematical problem being discussed
+   - Key subskills/success criteria
+   - **For each student profile**: How that student would approach this problem
+
+2. Each **Student Agent** receives:
+   - The shared lesson context
+   - **Their own** student approach (how they think about the problem differently)
+   - The teacher's prompt
+
+This enables **authentic differentiation**: each student genuinely thinks about the problem their own way.
+
+### Component-Based Model Organization
+Models are organized by component (lesson_analyzer, student_agent, etc.) rather than by "type" (inputs, outputs, schemas). This makes it immediately clear:
+- What does component X receive? → Look in `component_x/request.py`
+- What does component X return? → Look in `component_x/response.py`
+- What does the LLM return for component X? → Look in `component_x/outputs.py`
+
+### Shared Context Architecture
+```
+┌─────────────────────────────────────┐
+│      Lesson Setup Phase             │
+│  (LessonSetupRequest → LessonContext)│
+└──────────────┬──────────────────────┘
+               │
+     ┌─────────▼─────────────────────────────────────────┐
+     │         Lesson Context (Shared by All)           │
+     │  ┌────────────────────────────────────────────┐   │
+     │  │ • Grade level, topic, objectives           │   │
+     │  │ • Mathematical problem being discussed      │   │
+     │  │ • Subskills/success criteria               │   │
+     │  │ • Student approaches (indexed by ID)        │   │
+     │  │   - Each student's thinking approach        │   │
+     │  │   - How they'd approach this problem        │   │
+     │  └────────────────────────────────────────────┘   │
+     └──────────────┬──────────────────────────────────────┘
+                    │
+        ┌───────────┴──────────┬──────────────┬──────────────┐
+        │                      │              │              │
+        ▼                      ▼              ▼              ▼
+   ┌────────────┐     ┌──────────────┐  ┌────────────┐  ┌────────────┐
+   │  Student   │     │   Student    │  │  Feedback  │  │   Lesson   │
+   │   Agent 1  │     │   Agent 2    │  │   Agent    │  │  Summary   │
+   │ (Vex)      │     │  (Chipper)   │  │            │  │   Agent    │
+   │            │     │              │  │            │  │            │
+   │ Receives:  │     │  Receives:   │  │ Receives:  │  │ Receives:  │
+   │ • LessonCtx│     │  • LessonCtx │  │ • LessonCtx│  │ • LessonCtx│
+   │ • Their own│     │  • Their own │  │ • Full     │  │ • Full     │
+   │   approach │     │    approach  │  │   history  │  │   history  │
+   │ • Question │     │  • Question  │  │ • Latest   │  │            │
+   │            │     │              │  │   move     │  │            │
+   └────────────┘     └──────────────┘  └────────────┘  └────────────┘
+```
+
+### Real-Time Feedback Flow
+```
+Teacher Question → Student Responses (parallel) → Feedback Agent analyzes move
+                                                   (evaluates against subskills)
+                                                   → Real-time coaching (SSE)
 ```
 
 ## Tech Stack

@@ -4,7 +4,8 @@ Prompts for student agents to authentically simulate student responses based on 
 """
 
 from typing import List, Optional
-from ..models.schemas import StudentProfile, LessonContext, ConversationMessage
+from ..models.domain import StudentProfile, ConversationMessage
+from ..models.lesson_analyzer import LessonContext
 
 
 def _format_list(items: List[str]) -> str:

@@ -5,7 +5,9 @@ import pytest
 from pathlib import Path
 from rehearsed_multi_student.profiles.loader import ProfileLoader
 from rehearsed_multi_student.agents.student_agent import ParallelStudentOrchestrator
-from rehearsed_multi_student.models.schemas import TeacherPromptRequest, ConversationMessage, LessonContext
+from rehearsed_multi_student.models.domain import ConversationMessage
+from rehearsed_multi_student.models.student_agent import TeacherPromptRequest
+from rehearsed_multi_student.models.lesson_analyzer import LessonContext
 from rehearsed_multi_student.services.tts_service import TextToSpeechService
 
 

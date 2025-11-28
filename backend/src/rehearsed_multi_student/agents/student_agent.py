@@ -6,13 +6,9 @@ from typing import List, Optional
 from google import genai
 from google.genai import types
 
-from rehearsed_multi_student.models.schemas import (
-    StudentProfile,
-    StudentResponse,
-    TeacherPromptRequest,
-    ConversationMessage,
-    LessonContext,
-)
+from rehearsed_multi_student.models.domain import StudentProfile, ConversationMessage
+from rehearsed_multi_student.models.student_agent import StudentResponse, TeacherPromptRequest
+from rehearsed_multi_student.models.lesson_analyzer import LessonContext
 from ..prompts import build_student_system_prompt
 
 

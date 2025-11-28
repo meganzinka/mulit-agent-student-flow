@@ -3,7 +3,7 @@
 import yaml
 from pathlib import Path
 from typing import List, Dict
-from rehearsed_multi_student.models.schemas import StudentProfile
+from rehearsed_multi_student.models.domain import StudentProfile
 
 
 class ProfileLoader:

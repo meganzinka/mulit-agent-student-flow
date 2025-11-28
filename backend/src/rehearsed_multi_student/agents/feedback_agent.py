@@ -3,9 +3,11 @@ import json
 from typing import List, Optional
 from google import genai
 from google.genai import types
-from ..models.schemas import StudentResponse, ConversationMessage, LessonContext
-from ..models.feedback import TeacherFeedback, FeedbackInsight
-from ..models.outputs import TeacherFeedbackOutput
+from ..models.student_agent import StudentResponse
+from ..models.domain import ConversationMessage
+from ..models.lesson_analyzer import LessonContext
+from ..models.feedback_agent import TeacherFeedback, FeedbackInsight
+from ..models.lesson_summary_agent import NextStepsOutput
 from ..prompts import get_feedback_system_prompt
 
 
