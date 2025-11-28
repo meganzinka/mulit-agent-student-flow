@@ -119,7 +119,7 @@ async def test_lesson_analyzer_with_text():
     print("="*80)
     
     # Load student profiles
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     student_profiles = loader.load_all_profiles()
     
@@ -154,7 +154,7 @@ async def test_lesson_analyzer_with_pdf():
     print("="*80)
     
     # Check if PDF exists
-    pdf_path = Path(__file__).parent.parent / "sample_lesson_plans" / "public_task_1531.pdf"
+    pdf_path = Path(__file__).parent.parent.parent / "sample_lesson_plans" / "public_task_1531.pdf"
     
     if not pdf_path.exists():
         print(f"\n⚠️  PDF not found at {pdf_path}")
@@ -166,7 +166,7 @@ async def test_lesson_analyzer_with_pdf():
     print(f"   PDF size: {len(pdf_base64)} bytes (base64)")
     
     # Load student profiles
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     student_profiles = loader.load_all_profiles()
     print(f"✓ Loaded {len(student_profiles)} student profiles")
@@ -199,7 +199,7 @@ async def test_lesson_analyzer_with_text_and_pdf():
     print("="*80)
     
     # Check if PDF exists
-    pdf_path = Path(__file__).parent.parent / "sample_lesson_plans" / "public_task_1531.pdf"
+    pdf_path = Path(__file__).parent.parent.parent / "sample_lesson_plans" / "public_task_1531.pdf"
     
     if not pdf_path.exists():
         print(f"\n⚠️  PDF not found at {pdf_path}")
@@ -211,7 +211,7 @@ async def test_lesson_analyzer_with_text_and_pdf():
     print(f"   PDF size: {len(pdf_base64)} bytes (base64)")
     
     # Load student profiles
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     student_profiles = loader.load_all_profiles()
     print(f"✓ Loaded {len(student_profiles)} student profiles")
@@ -244,7 +244,7 @@ async def test_lesson_context_structure():
     print("="*80)
     
     # Load profiles
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     student_profiles = loader.load_all_profiles()
     

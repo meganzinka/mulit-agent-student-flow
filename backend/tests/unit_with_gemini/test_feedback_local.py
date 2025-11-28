@@ -6,14 +6,19 @@ Tests the new feedback system that provides:
 - suggestion: Actionable coaching tip
 """
 
+import sys
 import pytest
 from pathlib import Path
-from src.rehearsed_multi_student.profiles.loader import ProfileLoader
-from src.rehearsed_multi_student.agents.student_agent import ParallelStudentOrchestrator
-from src.rehearsed_multi_student.agents.feedback_agent import FeedbackAgent
-from src.rehearsed_multi_student.models.student_agent import TeacherPromptRequest
-from src.rehearsed_multi_student.models.lesson_analyzer import LessonContext, StudentApproachOutput
-from src.rehearsed_multi_student.services.tts_service import TextToSpeechService
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+
+from rehearsed_multi_student.profiles.loader import ProfileLoader
+from rehearsed_multi_student.agents.student_agent import ParallelStudentOrchestrator
+from rehearsed_multi_student.agents.feedback_agent import FeedbackAgent
+from rehearsed_multi_student.models.student_agent import TeacherPromptRequest
+from rehearsed_multi_student.models.lesson_analyzer import LessonContext, StudentApproachOutput
+from rehearsed_multi_student.services.tts_service import TextToSpeechService
 
 
 def create_lesson_context_with_approaches():
@@ -60,7 +65,7 @@ async def test_feedback_on_build_on_question():
     print("="*80)
     
     # Load profiles and create orchestrator
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     
@@ -119,7 +124,7 @@ async def test_feedback_on_probing_question():
     print("TEST 2: FEEDBACK ON PROBING QUESTION")
     print("="*80)
     
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     
@@ -168,7 +173,7 @@ async def test_feedback_on_visibility_question():
     print("TEST 3: FEEDBACK ON VISIBILITY QUESTION")
     print("="*80)
     
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     
@@ -217,7 +222,7 @@ async def test_feedback_on_weak_move():
     print("TEST 4: FEEDBACK ON WEAK PEDAGOGICAL MOVE")
     print("="*80)
     
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     
@@ -268,7 +273,7 @@ async def test_feedback_with_conversation_history():
     print("TEST 5: FEEDBACK WITH CONVERSATION HISTORY")
     print("="*80)
     
-    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     
@@ -276,7 +281,7 @@ async def test_feedback_with_conversation_history():
     feedback_agent = FeedbackAgent()
     lesson_context = create_lesson_context_with_approaches()
     
-    from src.rehearsed_multi_student.models.domain import ConversationMessage
+    from rehearsed_multi_student.models.domain import ConversationMessage
     
     # Simulate a multi-turn conversation
     conversation_history = [
