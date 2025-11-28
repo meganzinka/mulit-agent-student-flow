@@ -2,7 +2,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
-
 class FeedbackInsight(BaseModel):
     """A single feedback insight for the teacher."""
     category: str = Field(..., description="Category: equity, wait_time, question_quality, follow_up, engagement")

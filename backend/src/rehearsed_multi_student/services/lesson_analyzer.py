@@ -3,29 +3,8 @@ import json
 from google import genai
 from google.genai import types
 from ..models.schemas import LessonContext, LessonSetupRequest
-
-
-LESSON_ANALYSIS_PROMPT = """You are an educational content analyzer. Extract structured information from the lesson plan.
-
-Your task:
-1. Identify the grade level (if not explicit, infer from content complexity)
-2. Identify the subject and specific topic
-3. Extract learning objectives (what students should learn)
-4. List key concepts and vocabulary
-5. Write a brief context summary that will help AI agents understand how students at THIS grade level would think about THIS topic
-
-Be specific about grade level - this determines how students will respond!
-
-RESPOND IN JSON:
-{
-  "grade_level": "string (e.g., '3rd grade', '9th grade', 'High School')",
-  "subject": "string (e.g., 'Mathematics', 'Algebra II')",
-  "topic": "string (e.g., 'Fractions - Adding Unlike Denominators')",
-  "learning_objectives": ["objective 1", "objective 2", ...],
-  "key_concepts": ["concept 1", "concept 2", ...],
-  "context_summary": "A brief paragraph explaining the lesson focus and how students at this grade level typically approach this topic"
-}
-"""
+from ..models.outputs import LessonAnalysisOutput
+from ..prompts import get_lesson_analysis_system_prompt
 
 
 class LessonAnalyzer:
@@ -79,16 +58,16 @@ class LessonAnalyzer:
             model=self.model_id,
             contents=content_parts,
             config=types.GenerateContentConfig(
-                system_instruction=LESSON_ANALYSIS_PROMPT,
+                system_instruction=get_lesson_analysis_system_prompt(),
                 temperature=0.3,  # Consistent extraction
-                response_mime_type="application/json"
+                response_schema=LessonAnalysisOutput
             )
         )
         
-        # Parse JSON response
+        # Parse structured output
         try:
-            lesson_data = json.loads(response.text)
-            return LessonContext(**lesson_data)
+            lesson_output = LessonAnalysisOutput.model_validate_json(response.text)
+            return LessonContext(**lesson_output.model_dump())
         except (json.JSONDecodeError, Exception) as e:
             # Fallback if parsing fails
             return LessonContext(

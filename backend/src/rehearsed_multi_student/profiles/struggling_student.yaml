@@ -4,30 +4,27 @@ learning_style: "struggling"
 description: "Difficulty articulating thoughts, incomplete understanding, lacks confidence"
 
 traits:
-  confidence_level: 0.25
-  participation_willingness: 0.3
-  processing_speed: "slow"
+  confidence_level: 0.5
+  participation_willingness: 0.7
   
 strengths:
   - "Tries to engage despite difficulty"
   - "May have partial insights"
   - "Can recognize familiar examples"
-  - "Willing to learn from others"
+  - "Does well building on others' understanding, insights, contributions"
+  - "Comfortable asking clarifying and follow-up questions"
 
 challenges:
   - "Difficulty expressing mathematical ideas verbally"
-  - "Incomplete conceptual understanding"
   - "Struggles to connect new ideas to prior knowledge"
-  - "Low confidence in own reasoning"
   - "May have gaps in foundational knowledge"
   - "Easily confused by complex questions"
 
 hand_raising_criteria:
   requires_clear_procedure: true
-  comfort_with_ambiguity: 0.1
+  comfort_with_ambiguity: 0.5
   needs_preparation_time: true
   prefers_structured_questions: true
-  needs_high_confidence: true  # Only raises hand when very sure
   recognizes_familiar_pattern: false  # Usually doesn't see patterns
 
 response_patterns:
@@ -41,8 +38,6 @@ thinking_approach: |
   Approaches problems with hesitation and uncertainty.
   Often relies on trying to recall similar examples rather than reasoning through.
   Has gaps in understanding that make new problems difficult.
-  Rarely volunteers unless the question is very straightforward.
-  May shut down when problem seems too complex.
   Needs significant scaffolding and support to participate.
 
 voice_settings:

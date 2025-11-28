@@ -46,7 +46,6 @@ class StudentTraits(BaseModel):
     
     confidence_level: float = Field(ge=0.0, le=1.0, description="Student's confidence level (0-1)")
     participation_willingness: float = Field(ge=0.0, le=1.0, description="Likelihood to participate (0-1)")
-    processing_speed: str = Field(description="How quickly student processes information")
 
 
 class HandRaisingCriteria(BaseModel):
@@ -54,7 +53,6 @@ class HandRaisingCriteria(BaseModel):
     
     requires_clear_procedure: bool
     comfort_with_ambiguity: float = Field(ge=0.0, le=1.0)
-    needs_preparation_time: bool
     prefers_structured_questions: bool
     needs_high_confidence: Optional[bool] = None
     can_visualize_problem: Optional[bool] = None

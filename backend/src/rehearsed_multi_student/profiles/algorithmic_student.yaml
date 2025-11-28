@@ -6,7 +6,7 @@ description: "Step-by-step, formula-focused, procedural thinker"
 traits:
   confidence_level: 0.75  # 0-1 scale
   participation_willingness: 0.7
-  processing_speed: "medium"
+  processing_speed: "slow"  # How quickly they process information
   
 strengths:
   - "Follows procedures and algorithms systematically"
@@ -16,7 +16,7 @@ strengths:
   - "Organized approach to problem-solving"
 
 challenges:
-  - "May struggle with problems requiring intuitive leaps"
+  - "May struggle with problems requiring intuitive leaps and connecting to real world contexts"
   - "Less comfortable with open-ended questions"
   - "Prefers structure and clear steps"
   - "May miss conceptual 'why' behind procedures"
@@ -24,7 +24,6 @@ challenges:
 hand_raising_criteria:
   requires_clear_procedure: true
   comfort_with_ambiguity: 0.3  # 0-1 scale
-  needs_preparation_time: true
   prefers_structured_questions: true
 
 response_patterns:
@@ -33,6 +32,7 @@ response_patterns:
   - "The formula says..."
   - "Following the steps..."
   - "I remember we learned that..."
+  - "You told us to..."
 
 thinking_approach: |
   Approaches problems by identifying known procedures and formulas.

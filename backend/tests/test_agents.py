@@ -1,13 +1,28 @@
 """Simple test script to verify the system works."""
 
 import asyncio
+import pytest
 from pathlib import Path
 from rehearsed_multi_student.profiles.loader import ProfileLoader
 from rehearsed_multi_student.agents.student_agent import ParallelStudentOrchestrator
-from rehearsed_multi_student.models.schemas import TeacherPromptRequest, ConversationMessage
+from rehearsed_multi_student.models.schemas import TeacherPromptRequest, ConversationMessage, LessonContext
 from rehearsed_multi_student.services.tts_service import TextToSpeechService
 
 
+# Helper function to create lesson context
+def create_lesson_context():
+    """Create a standard lesson context for tests."""
+    return LessonContext(
+        grade_level="8th grade",
+        subject="Mathematics",
+        topic="Linear Equations and Parallel Lines",
+        learning_objectives=["Understand parallel lines", "Relate slope to parallel lines"],
+        key_concepts=["slope", "parallel lines", "linear equations"],
+        context_summary="Students are learning about parallel lines in the coordinate plane and how slopes determine parallelism."
+    )
+
+
+@pytest.mark.asyncio
 async def test_single_turn():
     """Test a single teacher prompt."""
     
@@ -15,8 +30,8 @@ async def test_single_turn():
     print("TEST 1: SINGLE TURN")
     print("="*60)
     
-    # Load profiles
-    profiles_dir = Path(__file__).parent / "src" / "rehearsed_multi_student" / "profiles"
+    # Load profiles - correct path from tests/ to src/
+    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     
@@ -32,7 +47,7 @@ async def test_single_turn():
     # Test prompt
     request = TeacherPromptRequest(
         prompt="We have the line y = 2x + 1. What would a parallel line look like?",
-        lesson_context="We're studying parallel lines and how their slopes relate.",
+        lesson_context=create_lesson_context(),
         conversation_history=[]
     )
     
@@ -60,6 +75,7 @@ async def test_single_turn():
     return orchestrator, responses
 
 
+@pytest.mark.asyncio
 async def test_multi_turn():
     """Test a multi-turn conversation."""
     
@@ -68,11 +84,15 @@ async def test_multi_turn():
     print("="*60)
     
     # Load profiles
-    profiles_dir = Path(__file__).parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
+    print(f"\n✓ Loaded {len(profiles)} student profiles")
+    for profile in profiles:
+        print(f"  - {profile.name} ({profile.learning_style})")
     tts_service = TextToSpeechService()
     orchestrator = ParallelStudentOrchestrator(profiles, tts_service)
+    print(f"✓ Created orchestrator with {len(orchestrator.agents)} agents")
     
     # TURN 1: Initial question
     print("\n🔄 TURN 1: Initial Question")
@@ -80,7 +100,7 @@ async def test_multi_turn():
     
     request1 = TeacherPromptRequest(
         prompt="We have the line y = 2x + 1. What would a parallel line look like?",
-        lesson_context="We're studying linear equations and exploring parallel lines.",
+        lesson_context=create_lesson_context(),
         conversation_history=[]
     )
     
@@ -117,7 +137,7 @@ async def test_multi_turn():
     
     request2 = TeacherPromptRequest(
         prompt=f"OK, so {maya_response.student_name} says that parallel lines would have the same steepness. What would happen if they didn't have the same steepness?",
-        lesson_context="We're studying linear equations and exploring parallel lines.",
+        lesson_context=create_lesson_context(),
         conversation_history=conversation_history
     )
     
@@ -159,7 +179,7 @@ async def test_multi_turn():
     
     request3 = TeacherPromptRequest(
         prompt="Can someone give me a specific example of two lines that would intersect exactly once?",
-        lesson_context="We're studying linear equations and exploring parallel lines.",
+        lesson_context=create_lesson_context(),
         conversation_history=conversation_history
     )
     
@@ -180,6 +200,7 @@ async def test_multi_turn():
     print(f"\n✓ Turn 3 Summary: {num_raising}/{len(responses3)} students would participate")
 
 
+@pytest.mark.asyncio
 async def test_audio_generation():
     """Test audio generation for student responses."""
     
@@ -188,7 +209,7 @@ async def test_audio_generation():
     print("="*60)
     
     # Load profiles
-    profiles_dir = Path(__file__).parent / "src" / "rehearsed_multi_student" / "profiles"
+    profiles_dir = Path(__file__).parent.parent / "src" / "rehearsed_multi_student" / "profiles"
     loader = ProfileLoader(profiles_dir)
     profiles = loader.load_all_profiles()
     tts_service = TextToSpeechService()
@@ -198,7 +219,7 @@ async def test_audio_generation():
     
     request = TeacherPromptRequest(
         prompt="We have the line y = 2x + 1. What would a parallel line look like?",
-        lesson_context="We're studying parallel lines and how their slopes relate.",
+        lesson_context=create_lesson_context(),
         conversation_history=[]
     )
     
