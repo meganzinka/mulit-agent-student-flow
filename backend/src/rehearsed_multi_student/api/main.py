@@ -39,10 +39,11 @@ def get_allowed_origins():
     """Get allowed CORS origins."""
     # Default allowed origins
     default_origins = ",".join([
-        "https://multi-agent-frontend-847407960490.us-central1.run.app",  # Production frontend
-        "https://builder.io",  # Builder.io editor
-        "https://cdn.builder.io",  # Builder.io CDN
-    ])
+    "https://53362a10bffd4ceeb5b0c1c7d934f97b-e809b024662c40588788104bf.fly.dev",  # Dev
+    "https://multi-agent-frontend-847407960490.us-central1.run.app",  # Production
+    "https://builder.io",
+    "https://cdn.builder.io",
+])
     
     origins_str = os.getenv("ALLOWED_ORIGINS", default_origins)
     return [origin. strip() for origin in origins_str.split(",")]
