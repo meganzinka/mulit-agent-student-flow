@@ -364,11 +364,11 @@ async def setup_lesson(request: LessonSetupRequest):
         }
     """
     try:
-        lesson_context = await lesson_analyzer.analyze_lesson_plan(request)
+        student_profiles = profiles
+        lesson_context = await lesson_analyzer.analyze_lesson_plan(request, student_profiles)
         return lesson_context
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/lesson/end", response_model=EndLessonResponse)
 async def end_lesson(request: EndLessonRequest):
