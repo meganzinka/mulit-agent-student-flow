@@ -7,11 +7,15 @@ from pathlib import Path
 import json
 import asyncio
 
-from rehearsed_multi_student.models.schemas import (
+from rehearsed_multi_student.models.student_agent import (
     TeacherPromptRequest,
     MultiStudentResponse,
+)
+from rehearsed_multi_student.models.lesson_analyzer import (
     LessonSetupRequest,
     LessonContext,
+)
+from rehearsed_multi_student.models.lesson_summary_agent import (
     EndLessonRequest,
     EndLessonResponse,
 )
