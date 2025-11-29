@@ -35,15 +35,22 @@ app = FastAPI(
     root_path="/api"
 )
 
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "https://multi-agent-frontend-847407960490.us-central1.run.app"
-). split(",")
+def get_allowed_origins():
+    """Get allowed CORS origins."""
+    # Default allowed origins
+    default_origins = ",".join([
+        "https://multi-agent-frontend-847407960490.us-central1.run.app",  # Production frontend
+        "https://builder.io",  # Builder.io editor
+        "https://cdn.builder.io",  # Builder.io CDN
+    ])
+    
+    origins_str = os.getenv("ALLOWED_ORIGINS", default_origins)
+    return [origin. strip() for origin in origins_str.split(",")]
 
-# Add CORS middleware for frontend integration
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
