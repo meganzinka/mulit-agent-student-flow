@@ -141,21 +141,17 @@ async def ask_students(request: TeacherPromptRequest, stream_feedback: bool = Fa
             await asyncio.sleep(0.1)
             
             # Generate and stream feedback
-            feedback = await feedback_agent.analyze_interaction(
-                teacher_prompt=request.prompt,
+            feedback = await feedback_agent.analyze_teacher_move(
+                latest_teacher_statement=request.prompt,
                 student_responses=student_responses,
                 conversation_history=request.conversation_history,
                 lesson_context=request.lesson_context,
             )
             
-            for insight in feedback.insights:
-                yield f"event: feedback_insight\n"
-                yield f"data: {insight.model_dump_json()}\n\n"
-                await asyncio.sleep(0.05)
-            
-            if feedback.overall_observation:
-                yield f"event: feedback_complete\n"
-                yield f"data: {json.dumps({'overall_observation': feedback.overall_observation})}\n\n"
+            # Send teacher feedback
+            yield f"event: teacher_feedback\n"
+            yield f"data: {feedback.model_dump_json()}\n\n"
+            await asyncio.sleep(0.05)
             
             yield f"event: done\n"
             yield f"data: {{}}\n\n"
@@ -224,20 +220,17 @@ async def ask_students_with_audio(request: TeacherPromptRequest, stream_feedback
             await asyncio.sleep(0.1)
             
             # Generate and stream feedback
-            feedback = await feedback_agent.analyze_interaction(
-                teacher_prompt=request.prompt,
+            feedback = await feedback_agent.analyze_teacher_move(
+                latest_teacher_statement=request.prompt,
                 student_responses=student_responses,
                 conversation_history=request.conversation_history,
+                lesson_context=request.lesson_context,
             )
             
-            for insight in feedback.insights:
-                yield f"event: feedback_insight\n"
-                yield f"data: {insight.model_dump_json()}\n\n"
-                await asyncio.sleep(0.05)
-            
-            if feedback.overall_observation:
-                yield f"event: feedback_complete\n"
-                yield f"data: {json.dumps({'overall_observation': feedback.overall_observation})}\n\n"
+            # Send teacher feedback
+            yield f"event: teacher_feedback\n"
+            yield f"data: {feedback.model_dump_json()}\n\n"
+            await asyncio.sleep(0.05)
             
             yield f"event: done\n"
             yield f"data: {{}}\n\n"
@@ -305,28 +298,18 @@ async def ask_students_with_feedback(request: TeacherPromptRequest):
             await asyncio.sleep(0.1)
             
             # Step 2: Generate feedback in background (streaming)
-            # Determine which student was called on (if any) - could be from request
-            called_on = getattr(request, 'called_on_student', None)
-            
-            # Analyze the interaction
-            feedback = await feedback_agent.analyze_interaction(
-                teacher_prompt=request.prompt,
+            # Analyze the teacher's move
+            feedback = await feedback_agent.analyze_teacher_move(
+                latest_teacher_statement=request.prompt,
                 student_responses=student_responses,
                 conversation_history=request.conversation_history,
-                called_on_student=called_on,
                 lesson_context=request.lesson_context,
             )
             
-            # Stream each insight as it becomes available
-            for insight in feedback.insights:
-                yield f"event: feedback_insight\n"
-                yield f"data: {insight.model_dump_json()}\n\n"
-                await asyncio.sleep(0.05)  # Slight delay for streaming effect
-            
-            # Send overall observation
-            if feedback.overall_observation:
-                yield f"event: feedback_complete\n"
-                yield f"data: {json.dumps({'overall_observation': feedback.overall_observation})}\n\n"
+            # Send teacher feedback
+            yield f"event: teacher_feedback\n"
+            yield f"data: {feedback.model_dump_json()}\n\n"
+            await asyncio.sleep(0.05)
             
             # Signal completion
             yield f"event: done\n"
