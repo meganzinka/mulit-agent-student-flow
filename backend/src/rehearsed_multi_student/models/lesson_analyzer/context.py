@@ -36,7 +36,7 @@ class LessonContext(BaseModel):
     # The actual mathematical problem being discussed
     mathematical_problem: Optional[str] = Field(
         default=None,
-        description="The specific mathematical problem or scenario (e.g., the fish/tanks problem)"
+        description="The specific mathematical problem or scenario"
     )
     
     # Student approaches indexed by ID

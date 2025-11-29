@@ -287,7 +287,7 @@ When `stream_feedback=true`, the response is a **Server-Sent Events (SSE)** stre
 
 **Flow:**
 1. Students respond immediately (sent first)
-2. Feedback is generated and streamed in real-time
+2. Real-time coaching feedback is generated and sent
 3. Stream closes when complete
 
 **Event Types:**
@@ -300,34 +300,24 @@ event: students_response
 data: {"students":[...],"summary":"2 out of 3 students would raise their hand."}
 ```
 
-#### `feedback_insight`
-Each coaching insight is streamed as it's generated.
+#### `teacher_feedback`
+Real-time coaching feedback on the teacher's mathematical discourse move. Sent once per teacher statement.
 
 ```
-event: feedback_insight
-data: {"category":"question_quality","message":"You asked an open-ended question that invites students to share their thinking. This is a great way to surface student understanding before correcting misconceptions.","severity":"info"}
+event: teacher_feedback
+data: {"question_type":"probing","feedback":"You pressed for reasoning by asking 'Why?' - this is a key move in mathematical discourse. It encourages students to justify their thinking and make their reasoning visible.","suggestion":"Consider following up by asking the student to connect their reasoning to a visual representation or another student's idea."}
 ```
 
-**Insight Categories (for backward compatibility):**
-- `equity` - Participation and access patterns
-- `question_quality` - Effectiveness of the teacher's question
-- `engagement` - Student engagement levels
-- Other categories based on mathematical discourse analysis
+**TeacherFeedback Structure:**
+- `question_type` (string|null): The type of mathematical discourse move:
+  - `"build_on"` - Asking students to build on or respond to another student's idea
+  - `"probing"` - Pressing for reasoning, justification, or deeper explanation
+  - `"visibility"` - Making student thinking visible to the class
+  - `null` - Statement doesn't fit these categories (procedural, administrative, etc.)
+- `feedback` (string): Analysis of what the teacher did well and areas for improvement. Specific and grounded in the mathematical context.
+- `suggestion` (string): Actionable coaching suggestion for next steps. Focuses on strengthening mathematical discourse (revoicing, connecting ideas, using representations, pressing for precision).
 
-**Severity Levels:**
-- `info` - Positive observation, celebrate wins
-- `suggestion` - Room for improvement
-- `concern` - Important issue to address
-
-**Note:** The feedback now focuses exclusively on mathematical discourse quality (math talk moves, reasoning, representations, precision of language, misconception handling) rather than general classroom management strategies.
-
-#### `feedback_complete`
-Overall summary of the interaction.
-
-```
-event: feedback_complete
-data: {"overall_observation":"Strong start! Your concrete example engages visual and concrete thinkers while remaining accessible to struggling learners."}
-```
+**Note:** Feedback focuses exclusively on mathematical discourse quality: math talk moves, reasoning, representations, precision of mathematical language, and handling misconceptions.
 
 #### `done`
 Signals end of stream.
@@ -363,16 +353,10 @@ eventSource.addEventListener('students_response', (e) => {
   displayStudents(data.students);
 });
 
-eventSource.addEventListener('feedback_insight', (e) => {
-  const insight = JSON.parse(e.data);
-  // Display each insight as it arrives
-  addFeedbackInsight(insight);
-});
-
-eventSource.addEventListener('feedback_complete', (e) => {
-  const data = JSON.parse(e.data);
-  // Display overall summary
-  showOverallFeedback(data.overall_observation);
+eventSource.addEventListener('teacher_feedback', (e) => {
+  const feedback = JSON.parse(e.data);
+  // Display coaching feedback
+  showTeacherFeedback(feedback);
 });
 
 eventSource.addEventListener('done', () => {
@@ -397,6 +381,7 @@ const response = await fetch('http://localhost:8000/api/ask?stream_feedback=true
 
 const reader = response.body.getReader();
 const decoder = new TextDecoder();
+let eventType = '';
 
 while (true) {
   const { value, done } = await reader.read();
@@ -407,10 +392,17 @@ while (true) {
   
   for (const line of lines) {
     if (line.startsWith('event: ')) {
-      const eventType = line.slice(7);
+      eventType = line.slice(7).trim();
     } else if (line.startsWith('data: ')) {
       const data = JSON.parse(line.slice(6));
-      // Handle based on eventType
+      
+      if (eventType === 'students_response') {
+        // Handle student responses
+        console.log('Students:', data.students);
+      } else if (eventType === 'teacher_feedback') {
+        // Handle coaching feedback
+        console.log('Feedback:', data);
+      }
     }
   }
 }
@@ -666,16 +658,6 @@ function EndLesson({ lessonContext, conversationHistory }) {
  */
 ```
 
-### FeedbackInsight
-```javascript
-/**
- * @typedef {Object} FeedbackInsight
- * @property {string} category - Category of insight (e.g., 'question_quality', 'equity', 'engagement')
- * @property {string} message - Feedback message (specific, actionable)
- * @property {('info'|'suggestion'|'concern')} severity - Severity level
- */
-```
-
 ### TeacherFeedback (Real-time coaching feedback)
 ```javascript
 /**
@@ -816,8 +798,8 @@ function AskQuestion({ lessonContext }) {
 
           if (eventType === 'students_response') {
             setStudents(data.students);
-          } else if (eventType === 'feedback_insight') {
-            setFeedback(prev => [...prev, data]);
+          } else if (eventType === 'teacher_feedback') {
+            setFeedback(data);
           }
         }
       }
@@ -839,11 +821,15 @@ function AskQuestion({ lessonContext }) {
         </div>
       ))}
 
-      {feedback.map((insight, i) => (
-        <div key={i} className={`feedback-${insight.severity}`}>
-          <strong>{insight.category}:</strong> {insight.message}
+      {feedback && (
+        <div className="teacher-feedback">
+          {feedback.question_type && (
+            <span className="badge">{feedback.question_type}</span>
+          )}
+          <p><strong>Feedback:</strong> {feedback.feedback}</p>
+          <p><strong>Try Next:</strong> {feedback.suggestion}</p>
         </div>
-      ))}
+      )}
     </div>
   );
 }
