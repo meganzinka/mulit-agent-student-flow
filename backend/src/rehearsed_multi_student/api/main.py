@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from pathlib import Path
 import json
 import asyncio
+import os
 
 from rehearsed_multi_student.models.student_agent import (
     TeacherPromptRequest,
@@ -34,13 +35,19 @@ app = FastAPI(
     root_path="/api"
 )
 
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://multi-agent-frontend-847407960490.us-central1.run.app"
+). split(",")
+
 # Add CORS middleware for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    max_age=600,
 )
 
 # Initialize profile loader
